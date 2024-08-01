@@ -1,27 +1,35 @@
 import React, { useEffect, useMemo, useRef } from "react";
-import { Box } from "@mui/material";
-import { useTheme } from "@emotion/react";
+import { Box, useTheme } from "@mui/material";
 
-const TimeRangeRow: React.FC<any> = ({
-  resources,
-  data,
-  rowMinHeight,
-  resourceEventsMap,
-  startDate,
-  endDate,
-  subTick,
-  tickWidthPixels,
-  resizeRow,
-}) => {
-  const sortedEvents = (resourceEventsMap[data.id] ?? []).sort(
-    (a, b) => a?.startDate > b?.startDate
-  );
+import type { GanttResource, GanttEvent, GanttProps } from "./Gantt.types";
 
-  const eventsByLevel = [];
+type TimeRangeProps<EventT, ResourceT> = {
+  events: GanttEvent<EventT>[];
+  resource: GanttResource<ResourceT>;
+  dateRange: [number, number];
+  subTick: number;
+  tickWidthPixels: number;
+  resizeRow: (arg0: any) => any;
+};
+
+const TimeRangeRow = <EventT, ResourceT>(
+  props: TimeRangeProps<EventT, ResourceT>
+) => {
+  const {
+    resource,
+    events,
+    dateRange: [startDate],
+    subTick,
+    tickWidthPixels,
+    resizeRow,
+  } = props;
+  const sortedEvents = events.sort((a, b) => a.startDate - b.startDate);
+
+  const eventsByLevel: Array<typeof sortedEvents> = [];
 
   eventsByLevel.push([sortedEvents[0]]);
 
-  const checkLevel = (level, entry) => {
+  const checkLevel = (level: number, entry: (typeof sortedEvents)[0]) => {
     if (!eventsByLevel[level]) {
       eventsByLevel.push([entry]);
       return;
@@ -44,7 +52,7 @@ const TimeRangeRow: React.FC<any> = ({
 
   const eventHeight = 45;
 
-  const rowRef = useRef();
+  const rowRef = useRef<HTMLElement>(null);
 
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
@@ -53,10 +61,14 @@ const TimeRangeRow: React.FC<any> = ({
   });
 
   useEffect(() => {
-    resizeObserver.observe(rowRef.current);
+    if (rowRef.current) {
+      resizeObserver.observe(rowRef.current);
+    }
 
     return () => {
-      resizeObserver.unobserve(rowRef.current);
+      if (rowRef.current) {
+        resizeObserver.unobserve(rowRef.current);
+      }
     };
   }, []);
 
@@ -84,10 +96,10 @@ const TimeRangeRow: React.FC<any> = ({
       >
         <Box
           ref={rowRef}
-          data-resource={data.id}
+          data-resource={resource.id}
           sx={{
             width: "max-content",
-            height: eventsByLevel.length * (eventHeight + 8),
+            height: eventsByLevel.length * (eventHeight) + Math.max(0, eventsByLevel.length - 1) * 8,
             // height:  * eventHeight,
             display: "block",
             position: "relative",
@@ -100,20 +112,23 @@ const TimeRangeRow: React.FC<any> = ({
             (level, i) =>
               level?.flatMap((event) =>
                 event ? (
-                  <AssignmentEvent
+                  <Box
                     sx={() => {
                       const startTimeDiff =
-                        (new Date(event.startDate).valueOf() -
-                          startDate.valueOf()) /
+                        (new Date(event.startDate).valueOf() - startDate) /
                         1000 /
                         60;
                       const endTimeDiff =
-                        (new Date(event.endDate).valueOf() -
-                          startDate.valueOf()) /
+                        (new Date(event.endDate).valueOf() - startDate) /
                         1000 /
                         60;
 
                       return {
+                        background: 'red',
+                        height: '100%',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        maxHeight: eventHeight,
                         left: `${(startTimeDiff / subTick) * tickWidthPixels}px`,
                         width: `${((endTimeDiff - startTimeDiff) / subTick) * tickWidthPixels}px`,
                         top: Math.max(i * (eventHeight + 8)),
@@ -121,9 +136,9 @@ const TimeRangeRow: React.FC<any> = ({
                       };
                     }}
                     key={event.id}
-                    event={event}
-                    resources={resources}
-                  />
+                  >
+                    {event.id} - {new Date(event.startDate).toLocaleString()}
+                  </Box>
                 ) : (
                   ""
                 )
@@ -135,163 +150,81 @@ const TimeRangeRow: React.FC<any> = ({
   );
 };
 
-type GanttEvent<EventT> = {
-  startDate: number;
-  endDate: number;
-  isLoading: number;
-  id: string;
-} & EventT;
-
-type GanttResource<ResourceT> = {
-  // in case we are rendering tree the user should be able to define the rendering behavior
-  // with the link to multiple resource
-  //
-  // we need to provide the API to extend the view modes of the resources
-  // to allow user render the rows in the scheduler dynamically
-  //
-  // we need to use this API to create views like tree and so on
-  //
-  // what tree-like resource structure implements ? :
-  //    - change the amount of rendered rows on specific event
-  //    - modify the displayed resource rows ( attaching more data )
-  //
-  // it should be capable of providing additional props into the renderers of additional resource and event rows
-  //
-  id: string;
-} & ResourceT;
-
-type ViewUnit = "hour" | "day" | "week" | "month" | "year";
-
-type ViewPreset = {
-  unit: ViewUnit;
-};
-
-type GanttSlotsProps<EventT, ResourceT> = {
-  Event: GanttEvent<EventT>;
-  Resource: GanttResource<ResourceT>;
-  TimerangeHeader: any;
-  ResourceHeader: any;
-};
-
-type GanttSlots<EventT, ResourceT> = {
-  [Property in keyof GanttSlotsProps<EventT, ResourceT>]: GanttSlotsProps<
-    EventT,
-    ResourceT
-  >[Property];
-};
-
-interface GanttProps<EventT, ResourceT> {
-  events: GanttEvent<EventT>;
-  resources: GanttResource<ResourceT>;
-  slots: GanttSlots<EventT, ResourceT>;
-  slotsProps: GanttSlotsProps<EventT, ResourceT>;
-  dateRange: [number, number];
-}
-
 /**
  * Data driven gantt chart based on MUI
  */
-export const Gantt: <EventT, ResourceT>(
+export const Gantt = <EventT, ResourceT>(
   props: GanttProps<EventT, ResourceT>
-) => React.ReactElement<GanttProps<EventT, ResourceT>> = (props) => {
-  const {
-    events,
-    resources,
-    dateRange,
-    resourceFilters,
-    resourceSorting,
-    handleFilterDateChange,
-    handleNavigationChange,
-    slots,
-    slotsProps,
-  } = props;
+) => {
+  const { events, resources, dateRange, slots, slotsProps } = props;
 
+  const ganttScrollContainer = useRef<HTMLElement>(null);
+  const ganttHeaderScrollContainer = useRef<HTMLElement>(null);
+  const resourceScrollContainer = useRef<HTMLElement>(null);
+
+  const [startDate, endDate] = dateRange.map(
+    (timestamp) => new Date(timestamp)
+  );
   const tickWidthPixels = 115;
-
   const subTick = 60;
   const mainTick = 24 * 60;
-
   const schedulingThreeshold = 30;
-
   const threesholdRatio = subTick / schedulingThreeshold;
-
   const rowMinHeight = 64;
-
-  const viewPresets = [];
-
-  const ganntScrollContainer = useRef(null);
-  const ganntHeaderScrollContainer = useRef(null);
-  const resourceScrollContainer = useRef(null);
-
-  const startDate = filters.date[0];
-  const endDate = filters.date[1];
-
   const subTicksPerTimeRange = Math.ceil(
     (endDate.valueOf() - startDate.valueOf()) / (subTick * 60 * 1000)
   );
   const mainTickPerTimeRange = Math.ceil(
     (endDate.valueOf() - startDate.valueOf()) / (mainTick * 60 * 1000)
   );
-
   const mainTickWidth = (mainTick / subTick) * tickWidthPixels;
-
   const subTickDates = Array.from(Array(subTicksPerTimeRange).keys()).map(
     (el) => new Date(startDate.valueOf() + el * subTick * 60 * 1000)
   );
   const mainTickDates = Array.from(Array(mainTickPerTimeRange).keys()).map(
     (el) => new Date(startDate.valueOf() + el * mainTick * 60 * 1000)
   );
+  const ganttWidth = subTicksPerTimeRange * tickWidthPixels;
 
-  const ganntWidth = subTicksPerTimeRange * tickWidthPixels;
-
-  const handleGanntScroll: React.UIEventHandler<HTMLDivElement> = (scroll) => {
+  const handleganttScroll: React.UIEventHandler<HTMLElement> = (scroll) => {
     if (resourceScrollContainer.current) {
       resourceScrollContainer.current.scrollTop =
         scroll.currentTarget.scrollTop;
     }
-    if (ganntHeaderScrollContainer.current) {
-      ganntHeaderScrollContainer.current.scrollLeft =
+    if (ganttHeaderScrollContainer.current) {
+      ganttHeaderScrollContainer.current.scrollLeft =
         scroll.currentTarget.scrollLeft;
     }
   };
-  const handleGanntHeaderScroll: React.UIEventHandler<HTMLDivElement> = (
+  const handleganttHeaderScroll: React.UIEventHandler<HTMLElement> = (
     scroll
   ) => {
-    if (ganntHeaderScrollContainer.current) {
-      ganntScrollContainer.current.scrollLeft = scroll.currentTarget.scrollLeft;
+    if (ganttScrollContainer.current) {
+      ganttScrollContainer.current.scrollLeft = scroll.currentTarget.scrollLeft;
     }
   };
-  const handleResourceScroll: React.UIEventHandler<HTMLDivElement> = (
-    scroll
-  ) => {
-    if (resourceScrollContainer.current) {
-      ganntScrollContainer.current.scrollTop = scroll.currentTarget.scrollTop;
+  const handleResourceScroll: React.UIEventHandler<HTMLElement> = (scroll) => {
+    if (ganttScrollContainer.current) {
+      ganttScrollContainer.current.scrollTop = scroll.currentTarget.scrollTop;
     }
   };
 
   const resourceEventsMap = useMemo(() => {
-    const out: Record<string, SchedulerEvent[]> = {};
+    const out: Record<string, GanttEvent<EventT>[]> = {};
 
     for (const event of events) {
-      if (out[event.leadId]) {
-        out[event.leadId].push(event);
-      } else {
-        out[event.leadId] = [event];
-      }
-
-      for (const additionalUser of event?.additionalUserIds ?? []) {
-        if (out[additionalUser]) {
-          out[additionalUser].push(event);
-        } else {
-          out[additionalUser] = [event];
+      for (const resource of event.resources.values()) {
+        if (!out[resource]) {
+          out[resource] = [];
         }
+        out[resource].push(event);
       }
     }
 
     return out;
   }, [events]);
 
-  const resizeRow = (entry) => {
+  const resizeRow = (entry: ResizeObserverEntry) => {
     const resizedId = (entry.target as HTMLElement).getAttribute(
       "data-resource"
     );
@@ -301,8 +234,7 @@ export const Gantt: <EventT, ResourceT>(
 
     console.log(el);
     console.log(entry.contentRect.height);
-
-    el.style.height = `${entry.contentRect.height}px`;
+    el?.setAttribute("style", `height: ${entry.contentRect.height}px`);
   };
 
   const theme = useTheme();
@@ -322,24 +254,13 @@ export const Gantt: <EventT, ResourceT>(
             minWidth: "250px",
             padding: 1,
           }}
-        >
-          <ResourceColumnHeader
-            onCall={resourceFilters.onCall}
-            inputValue={resourceFilters.input}
-            shiftType={resourceFilters.shiftType}
-            sorting={resourceSorting}
-            onInputChange={() => {}}
-            onFilterChange={() => {}}
-            onSortingChange={() => {}}
-            filterOnCall={() => {}}
-          />
-        </Box>
+        ></Box>
         <Box
           sx={{ width: "8px", background: "#ebebeb", cursor: "ew-resize" }}
         />
         <Box
-          onScroll={handleGanntHeaderScroll}
-          ref={ganntHeaderScrollContainer}
+          onScroll={handleganttHeaderScroll}
+          ref={ganttHeaderScrollContainer}
           sx={{
             width: "100%",
             overflowX: "scroll",
@@ -353,7 +274,7 @@ export const Gantt: <EventT, ResourceT>(
           <Box
             sx={{
               height: 1,
-              width: ganntWidth,
+              width: ganttWidth,
               display: "flex",
               flexFlow: "column",
             }}
@@ -369,7 +290,7 @@ export const Gantt: <EventT, ResourceT>(
                 <Box
                   sx={{
                     width: 1,
-                    height: 1,
+                    height: 40,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -386,7 +307,7 @@ export const Gantt: <EventT, ResourceT>(
             </Box>
             <Box
               sx={{
-                height: 1,
+                height: 40,
                 display: "grid",
                 gridTemplateColumns: `repeat(${subTicksPerTimeRange}, ${tickWidthPixels}px)`,
               }}
@@ -461,20 +382,12 @@ export const Gantt: <EventT, ResourceT>(
                     marginInline: 1,
                   }}
                 >
-                  <UserInitialsInfoLine
-                    resourceType={data.resourceType}
-                    id={data.id}
-                    icon={data.image}
-                    firstName={data.firstName}
-                    lastName={data.lastName}
-                    role={data.professionName}
-                    color={theme.palette.common.white}
-                  />
+                  {data.id}
                 </Box>
               </Box>
               {/* <Box sx={{ width: 5, background: '#777', cursor: 'ew-resize' }} />
               <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', width: '100%' }}>
-                <Box sx={{ padding: 1.5 }}>Gannt</Box>
+                <Box sx={{ padding: 1.5 }}>gantt</Box>
               </Box> */}
             </Box>
           ))}
@@ -488,8 +401,8 @@ export const Gantt: <EventT, ResourceT>(
           }}
         />
         <Box
-          onScroll={handleGanntScroll}
-          ref={ganntScrollContainer}
+          onScroll={handleganttScroll}
+          ref={ganttScrollContainer}
           sx={{
             width: "100%",
             height: "100%",
@@ -499,8 +412,8 @@ export const Gantt: <EventT, ResourceT>(
         >
           <Box
             sx={{
-              width: ganntWidth,
-              backgroundImage: `url("data:image/svg+xml;utf8,<svg width='${ganntWidth}' height='100%' xmlns='http://www.w3.org/2000/svg'>${Array.from(
+              width: ganttWidth,
+              backgroundImage: `url("data:image/svg+xml;utf8,<svg width='${ganttWidth}' height='100%' xmlns='http://www.w3.org/2000/svg'>${Array.from(
                 Array(subTicksPerTimeRange - 1).keys()
               ).map(
                 (el) =>
@@ -515,17 +428,14 @@ export const Gantt: <EventT, ResourceT>(
               )}</svg>")`,
             }}
           >
-            {resources.map((data) => (
+            {resources.map((resource) => (
               <TimeRangeRow
-                data={data}
-                endDate={endDate}
-                resourceEventsMap={resourceEventsMap}
-                resources={resources}
-                rowMinHeight={rowMinHeight}
-                startDate={startDate}
+                events={resourceEventsMap[resource.id]}
+                dateRange={dateRange}
+                resource={resource}
                 subTick={subTick}
                 tickWidthPixels={tickWidthPixels}
-                key={data.id}
+                key={resource.id}
                 resizeRow={resizeRow}
               />
             ))}
