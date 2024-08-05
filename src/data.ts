@@ -28,18 +28,14 @@ const createRandomEvent = (): GanttEvent<unknown> => {
     })
   );
   return {
-    resources: new Set(
-      faker.helpers.multiple(getRandomResource, {
-        count: { min: 1, max: 5 },
-      })
-    ),
+    resource: getRandomResource(),
     endDate: startDate.valueOf() + duration * 60 * 1000,
     startDate: startDate.valueOf(),
-    id: faker.string.uuid(),
+    id: faker.string.numeric(6),
   };
 };
 
-export const events: GanttEvent<unknown>[] = faker.helpers.multiple(
+export const getEvents = (): GanttEvent<unknown>[] => faker.helpers.multiple(
   createRandomEvent,
   { count: { min: 50, max: 100 } }
 );

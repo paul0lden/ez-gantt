@@ -5,6 +5,7 @@ export default defineConfig(() => {
   return {
     server: {
       hmr: true,
+      host: true,
     },
     build: {
       outDir: 'build',
