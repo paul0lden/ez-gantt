@@ -1,8 +1,10 @@
+import type { ReactNode } from "react";
+
 type GanttEvent<EventT> = {
   startDate: number;
   endDate: number;
   id: string;
-  resources: Set<string>;
+  resource: string;
 } & EventT;
 
 type GanttResource<ResourceT> = {
@@ -37,13 +39,38 @@ type GanttSlots<EventT, ResourceT> = {
   >[Property];
 };
 
+type DateViewLevel = {
+  getNextTimestamp: (prev: number) => number;
+  getLabel: (date: Date) => ReactNode;
+  color?: string;
+  width?: number;
+};
+
 interface GanttProps<EventT, ResourceT> {
+  msPerPixel: number;
+  dateViewLevels: DateViewLevel[];
   events: GanttEvent<EventT>[];
   resources: GanttResource<ResourceT>[];
   slots?: GanttSlots<EventT, ResourceT>;
   slotsProps?: GanttSlotsProps<EventT, ResourceT>;
   dateRange: [number, number];
+  handleEventDrop: (
+    event: GanttEvent<EventT>,
+    resource: GanttResource<ResourceT>
+  ) => void;
 }
+
+type TimeRangeProps<EventT, ResourceT> = {
+  events: GanttEvent<EventT>[];
+  resource: GanttResource<ResourceT>;
+  dateRange: [number, number];
+  tickWidthPixels: number;
+  handleEventDrop: (
+    event: GanttEvent<EventT>,
+    resource: GanttResource<ResourceT>
+  ) => void;
+  resizeRow: (arg0: any) => any;
+};
 
 export type {
   GanttSlots,
@@ -51,4 +78,5 @@ export type {
   GanttProps,
   GanttEvent,
   GanttResource,
+  TimeRangeProps,
 };
