@@ -7,54 +7,6 @@ import { preserveOffsetOnSource } from "@atlaskit/pragmatic-drag-and-drop/elemen
 import { createRoot } from "react-dom/client";
 import { getEventType } from "./defaults";
 
-const ExampleEvent = (props) => {
-  const {
-    startDate,
-    endDate,
-    dateRange,
-    level,
-    eventHeight,
-    tickWidthPixels,
-    id,
-  } = props;
-
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        background: "grey",
-        height: "100%",
-        borderRadius: 2,
-      }}
-    >
-      <Box
-        data-role="resize-left"
-        onPointerDown={(e) => {
-          e.preventDefault();
-          //isResizing.current = true;
-          e.target.setPointerCapture(e.pointerId);
-        }}
-        onPointerMove={(e) => {
-          e.preventDefault();
-          //if (isResizing.current) {
-          //}
-        }}
-        onPointerUp={(e) => {
-          e.preventDefault();
-          //isResizing.current = false;
-          e.target.releasePointerCapture(e.pointerId);
-        }}
-        sx={{ width: 12, cursor: "ew-resize" }}
-      />
-      <Box sx={{ overflow: "hidden", width: "calc(100% - 24px)" }}>
-        {id} - {new Date(startDate).toLocaleString()}
-      </Box>
-      <Box data-role="resize-right" sx={{ width: 12, cursor: "ew-resize" }} />
-    </Box>
-  );
-};
-
-
 /**
  * Anything rendered inside of gantt should be movable within it
  * and the position should be calculated for it
@@ -63,6 +15,7 @@ const ExampleEvent = (props) => {
  */
 export const GanttElementWrapper = (props) => {
   const {
+    EventSlot,
     startDate,
     endDate,
     dateRange,
@@ -135,7 +88,7 @@ export const GanttElementWrapper = (props) => {
                     tickWidthPixels,
                 }}
               >
-                <ExampleEvent
+                <EventSlot
                   startDate={startDate}
                   endDate={endDate}
                   dateRange={dateRange}
@@ -153,26 +106,26 @@ export const GanttElementWrapper = (props) => {
     });
   }, [endDate, startDate, tickWidthPixels]);
 
+  if (dragging) return null;
+
   return (
     <Box
+      data-role="gantt-event"
       ref={ref}
-      sx={
-        dragging
-          ? { display: "none" }
-          : {
-              height: "100%",
-              overflow: "hidden",
-              maxHeight: eventHeight,
-              left: `${(startDate - dateRange[0]) / tickWidthPixels}px`,
-              width:
-                (endDate - dateRange[0] - (startDate - dateRange[0])) /
-                tickWidthPixels,
-              top: Math.max(level * (eventHeight + 8)),
-              position: "absolute",
-            }
-      }
+      sx={{
+        height: "100%",
+        zIndex: 10,
+        cursor: "pointer",
+        maxHeight: eventHeight,
+        left: `${(startDate - dateRange[0]) / tickWidthPixels}px`,
+        width:
+          (endDate - dateRange[0] - (startDate - dateRange[0])) /
+          tickWidthPixels,
+        top: Math.max(level * (eventHeight + 8)) + 8,
+        position: "absolute",
+      }}
     >
-      <ExampleEvent
+      <EventSlot
         startDate={startDate}
         endDate={endDate}
         dateRange={dateRange}

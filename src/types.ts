@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 type GanttEvent<EventT> = {
   startDate: number;
@@ -8,35 +8,27 @@ type GanttEvent<EventT> = {
 } & EventT;
 
 type GanttResource<ResourceT> = {
-  // in case we are rendering tree the user should be able to define the rendering behavior
-  // with the link to multiple resource
-  //
-  // we need to provide the API to extend the view modes of the resources
-  // to allow user render the rows in the scheduler dynamically
-  //
-  // we need to use this API to create views like tree and so on
-  //
-  // what tree-like resource structure implements ? :
-  //    - change the amount of rendered rows on specific event
-  //    - modify the displayed resource rows ( attaching more data )
-  //
-  // it should be capable of providing additional props into the renderers of additional resource and event rows
-  //
   id: string;
 } & ResourceT;
 
-type GanttSlotsProps<EventT = {}, ResourceT = {}> = {
+type PlaceholderProps = {
+  width: number;
+  level: number;
+  x: number;
+}
+
+type GanttSlotsProps<EventT, ResourceT> = {
   Event: GanttEvent<EventT>;
   Resource: GanttResource<ResourceT>;
+  Placeholder: PlaceholderProps;
   TimerangeHeader: any;
   ResourceHeader: any;
 };
 
 type GanttSlots<EventT, ResourceT> = {
-  [Property in keyof GanttSlotsProps<EventT, ResourceT>]: GanttSlotsProps<
-    EventT,
-    ResourceT
-  >[Property];
+  [Property in keyof GanttSlotsProps<EventT, ResourceT>]: () => ReactElement<
+    GanttSlotsProps<EventT, ResourceT>[Property]
+  >;
 };
 
 type DateViewLevel = {
@@ -47,11 +39,12 @@ type DateViewLevel = {
 };
 
 interface GanttProps<EventT, ResourceT> {
+  schedulingThreeshold: number;
   msPerPixel: number;
   dateViewLevels: DateViewLevel[];
   events: GanttEvent<EventT>[];
   resources: GanttResource<ResourceT>[];
-  slots?: GanttSlots<EventT, ResourceT>;
+  slots: GanttSlots<EventT, ResourceT>;
   slotsProps?: GanttSlotsProps<EventT, ResourceT>;
   dateRange: [number, number];
   handleEventDrop: (
@@ -61,6 +54,7 @@ interface GanttProps<EventT, ResourceT> {
 }
 
 type TimeRangeProps<EventT, ResourceT> = {
+  schedulingThreeshold: number;
   events: GanttEvent<EventT>[];
   resource: GanttResource<ResourceT>;
   dateRange: [number, number];

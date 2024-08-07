@@ -11,12 +11,15 @@ export const TimeRangeRow = <EventT, ResourceT>(
   props: TimeRangeProps<EventT, ResourceT>
 ) => {
   const {
+    EventSlot,
+    Placeholder,
     resource,
     events,
     dateRange: [startDate],
     tickWidthPixels,
     handleEventDrop,
     resizeRow,
+    schedulingThreeshold,
   } = props;
   const sortedEvents = events;
 
@@ -61,8 +64,6 @@ export const TimeRangeRow = <EventT, ResourceT>(
   const rowRef = useRef<HTMLElement>(null);
 
   const eventHeight = 45;
-  // Threeshold of resizing in miliseconds
-  const moveThreeshold = 30 * 60 * 1000;
   const resizeObserver = new ResizeObserver((entries) => {
     for (const entry of entries) {
       resizeRow(entry);
@@ -71,8 +72,8 @@ export const TimeRangeRow = <EventT, ResourceT>(
 
   const drawPlaceholder = (rowRelativeX: number, width: number, id: string) => {
     const roundValue =
-      Math.round(rowRelativeX / (moveThreeshold / tickWidthPixels)) *
-      (moveThreeshold / tickWidthPixels);
+      Math.round(rowRelativeX / (schedulingThreeshold / tickWidthPixels)) *
+      (schedulingThreeshold / tickWidthPixels);
 
     const level = checkLevel(
       {
@@ -176,9 +177,9 @@ export const TimeRangeRow = <EventT, ResourceT>(
           const roundValue =
             Math.round(
               (input.clientX - target.data.x - dragDiffX) /
-                (moveThreeshold / tickWidthPixels)
+                (schedulingThreeshold / tickWidthPixels)
             ) *
-            (moveThreeshold / tickWidthPixels);
+            (schedulingThreeshold / tickWidthPixels);
 
           const start = startDate + roundValue * tickWidthPixels;
           const end = start + width * tickWidthPixels;
@@ -227,8 +228,7 @@ export const TimeRangeRow = <EventT, ResourceT>(
         minHeight: eventHeight,
         position: "relative",
         boxSizing: "content-box",
-        marginTop: 0.5,
-        paddingBottom: 0.5,
+        paddingBlock: 1,
         borderBottom: "2px solid rgba(0,0,0,.2)",
       }}
       data-resource={resource.id}
@@ -239,6 +239,7 @@ export const TimeRangeRow = <EventT, ResourceT>(
             event ? (
               <GanttElementWrapper
                 {...event}
+                EventSlot={EventSlot}
                 dateRange={[startDate]}
                 level={i}
                 rowId={resource.id}
@@ -252,17 +253,7 @@ export const TimeRangeRow = <EventT, ResourceT>(
           ) ?? []
       )}
       {placeholderPos && (
-        <Box
-          sx={{
-            width: placeholderPos.width,
-            position: "absolute",
-            top: placeholderPos.level * 45 + placeholderPos.level * 8,
-            height: 45,
-            background: "rgba(0, 0, 0, .25)",
-            borderRadius: 2,
-            left: placeholderPos.x,
-          }}
-        />
+       <Placeholder {...placeholderPos} />
       )}
     </Box>
   );

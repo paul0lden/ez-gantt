@@ -11,23 +11,133 @@ import {
   startOfMonth,
 } from "date-fns";
 
+const Resource = ({ id }) => {
+  return (
+    <Box
+      key={id}
+      sx={{
+        width: "100%",
+        display: "flex",
+        ":hover": {
+          "& > .resource": {
+            backgroundColor: "rgba(0,0,0,.1)",
+          },
+        },
+      }}
+    >
+      <Box
+        className="resource"
+        sx={{
+          paddingBlock: 1,
+          width: "100%",
+          alignItems: "flex-start",
+          borderBottom: "2px solid rgba(0,0,0,.2)",
+        }}
+      >
+        <Box
+          data-resource={id}
+          sx={{
+            width: "max-content",
+            height: 45 + 8,
+            display: "flex",
+            marginInline: 2,
+          }}
+        >
+          {id}
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+const Event = (props) => {
+  const {
+    startDate,
+    endDate,
+    dateRange,
+    level,
+    eventHeight,
+    tickWidthPixels,
+    id,
+  } = props;
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        background: "grey",
+        height: "100%",
+        ":hover": {
+          outline: "2px aqua solid",
+        },
+        borderRadius: 2,
+      }}
+    >
+      <Box
+        data-role="resize-left"
+        onPointerDown={(e) => {
+          e.preventDefault();
+          //isResizing.current = true;
+          e.target.setPointerCapture(e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          e.preventDefault();
+          //if (isResizing.current) {
+          //}
+        }}
+        onPointerUp={(e) => {
+          e.preventDefault();
+          //isResizing.current = false;
+          e.target.releasePointerCapture(e.pointerId);
+        }}
+        sx={{ width: 12, cursor: "ew-resize" }}
+      />
+      <Box sx={{ overflow: "hidden", width: "calc(100% - 24px)" }}>
+        {id} - {new Date(startDate).toLocaleString()}
+      </Box>
+      <Box data-role="resize-right" sx={{ width: 12, cursor: "ew-resize" }} />
+    </Box>
+  );
+};
+
+const Placeholder = ({ width, x, level }) => {
+  return (
+    <Box
+      sx={{
+        width,
+        position: "absolute",
+        transition: "left .05s linear",
+        top: level * 45 + level * 8 + 8,
+        height: 45,
+        background: "rgba(0, 0, 0, .25)",
+        borderRadius: 2,
+        left: x,
+      }}
+    />
+  );
+};
+
 function App() {
   const [events, setEvents] = useState(getEvents());
 
   const handleEventDrop = (event, resource, dropArea) => {
-    console.log(event, resource, new Date(dropArea.startDate));
-
-    setEvents((prev) =>
-      [...prev.reduce(
-        (acc, el) => [
-          ...acc,
-          el.id === event.id
-            ?  []           : el,
-        ].flat(),
-        []
-      ), { ...event, ...dropArea, resource: resource.id }
-]
-    );
+    setEvents((prev) => {
+      let updated = false;
+      const base = prev.reduce((acc, el) => {
+        if (el.id === event.id) {
+          if (resource.id === el.resource) {
+            updated = true;
+            return [...acc, { ...event, ...dropArea, resource: resource.id }];
+          }
+          return [...acc];
+        }
+        return [...acc, el];
+      }, []);
+      return [
+        base,
+        updated ? [] : { ...event, ...dropArea, resource: resource.id },
+      ].flat();
+    });
   };
 
   return (
@@ -64,6 +174,11 @@ function App() {
           },
         ]}
         resources={resources}
+        slots={{
+          Event,
+          Placeholder,
+          Resource,
+        }}
       />
     </Box>
   );
