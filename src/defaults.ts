@@ -1,6 +1,6 @@
 type getTypeStringArgs = {
   dataType: string;
-  metadata: string;
+  metadata: string | string[];
 };
 
 export const EVENT_TYPE = "application/vnd.ez-gantt-event";
