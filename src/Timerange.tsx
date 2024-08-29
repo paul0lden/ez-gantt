@@ -13,6 +13,7 @@ export const TimeRangeRow = <EventT, ResourceT>(
   const {
     EventSlot,
     Placeholder,
+    setEventSelection,
     resource,
     events,
     dateRange: [startDate],
@@ -224,7 +225,7 @@ export const TimeRangeRow = <EventT, ResourceT>(
             eventsByLevel.length - 1
           ) *
             8,
-        transition: 'height 0.1s linear',
+        transition: "height 0.1s linear",
         minHeight: eventHeight,
         position: "relative",
         boxSizing: "content-box",
@@ -239,6 +240,9 @@ export const TimeRangeRow = <EventT, ResourceT>(
             event ? (
               <GanttElementWrapper
                 {...event}
+                onClick={(e) => e.shiftKey ? 
+                  setEventSelection(event.id) : null
+                }
                 EventSlot={EventSlot}
                 dateRange={[startDate]}
                 level={i}
@@ -252,9 +256,7 @@ export const TimeRangeRow = <EventT, ResourceT>(
             )
           ) ?? []
       )}
-      {placeholderPos && (
-       <Placeholder {...placeholderPos} />
-      )}
+      {placeholderPos && <Placeholder {...placeholderPos} />}
     </Box>
   );
 };

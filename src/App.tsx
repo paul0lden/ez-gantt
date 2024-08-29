@@ -10,6 +10,7 @@ import {
   format,
   startOfMonth,
 } from "date-fns";
+import { Set as ImmutableSet } from "immutable";
 
 const Resource = ({ id }) => {
   return (
@@ -59,10 +60,12 @@ const Event = (props) => {
     eventHeight,
     tickWidthPixels,
     id,
+    ...rest
   } = props;
 
   return (
     <Box
+      {...rest}
       sx={{
         display: "flex",
         background: "grey",
@@ -71,6 +74,7 @@ const Event = (props) => {
           outline: "2px aqua solid",
         },
         borderRadius: 2,
+        ...rest.sx,
       }}
     >
       <Box
@@ -119,6 +123,32 @@ const Placeholder = ({ width, x, level }) => {
 
 function App() {
   const [events, setEvents] = useState(getEvents());
+  const [selection, setSelection] = useState<ImmutableSet<string>>(
+    new ImmutableSet<string>()
+  );
+
+  const eventSelect = (
+    id: string,
+    operation: "toggle" | "clear" | "add" | "remove"
+  ) => {
+    switch (operation) {
+      case "clear":
+        setSelection((prev) => prev.clear());
+        break;
+
+      case "add":
+        setSelection((prev) => prev.add(id));
+        break;
+
+      case "remove":
+        setSelection((prev) => prev.remove(id));
+        break;
+
+      default:
+        setSelection((prev) => (prev.has(id) ? prev.remove(id) : prev.add(id)));
+        break;
+    }
+  };
 
   const handleEventDrop = (event, resource, dropArea) => {
     setEvents((prev) => {
@@ -150,6 +180,7 @@ function App() {
         ]}
         msPerPixel={60 * 1000}
         events={events}
+        setEvenSelection={eventSelect}
         dateViewLevels={[
           {
             getNextTimestamp: (prevRange: number) =>
@@ -175,7 +206,14 @@ function App() {
         ]}
         resources={resources}
         slots={{
-          Event,
+          Event: (props) => (
+            <Event
+              {...props}
+              sx={{
+                outline: selection.has(props.id) ? "2px red solid" : "unset",
+              }}
+            />
+          ),
           Placeholder,
           Resource,
         }}

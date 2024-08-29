@@ -39,6 +39,7 @@ type DateViewLevel = {
 };
 
 interface GanttProps<EventT, ResourceT> {
+  setEvenSelection?: (id: string) => void;
   schedulingThreeshold: number;
   msPerPixel: number;
   dateViewLevels: DateViewLevel[];
@@ -54,6 +55,7 @@ interface GanttProps<EventT, ResourceT> {
 }
 
 type TimeRangeProps<EventT, ResourceT> = {
+  setEventSelection?: (id: string) => void
   schedulingThreeshold: number;
   events: GanttEvent<EventT>[];
   resource: GanttResource<ResourceT>;
