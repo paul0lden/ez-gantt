@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { ReactEventHandler, useEffect, useRef, useState } from "react";
 import { Box } from "@mui/material";
 
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -13,8 +13,9 @@ import { getEventType } from "./defaults";
  * Everything else belongs to the element logic itself (like rersizing)
  *
  */
-export const GanttElementWrapper = (props) => {
+export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerEvent>}) => {
   const {
+    onClick,
     EventSlot,
     startDate,
     endDate,
@@ -112,6 +113,7 @@ export const GanttElementWrapper = (props) => {
     <Box
       data-role="gantt-event"
       ref={ref}
+      onClick={onClick}
       sx={{
         height: "100%",
         zIndex: 10,

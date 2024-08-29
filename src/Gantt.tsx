@@ -7,6 +7,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 
 import type { GanttEvent, GanttProps } from "./types";
 import { TimeRangeRow } from "./Timerange";
+import { generateBackground, levelToDates } from "./helpers";
 
 /**
  * Data driven gantt chart based on MUI
@@ -19,58 +20,56 @@ export const Gantt = <EventT, ResourceT>(
     schedulingThreeshold = 30 * 60 * 1000,
     events,
     resources,
-    dateRange,
-    slots,
+    dateRange: [startDate, endDate],
+    slots: { Placeholder, Resource, Event },
     slotsProps,
+    setEvenSelection,
     dateViewLevels,
     handleEventDrop,
   } = props;
 
-  const { Resource, Event, Placeholder } = slots;
-
+  const selectRect = useRef<HTMLElement>(null);
+  const selectData = useRef<{ startResource: string; startTimestamp: number } | null>(
+    null
+  );
   const ganttScrollContainer = useRef<HTMLElement>(null);
   const ganttHeaderScrollContainer = useRef<HTMLElement>(null);
   const resourceScrollContainer = useRef<HTMLElement>(null);
 
-  const [selection, setSelection] = useState([]);
-
-  const [startDate, endDate] = dateRange;
-  const levelToDates = (
-    level: {
-      getNextTimestamp: (prev: number) => number;
-      getLabel: (date: Date) => any;
-    },
-    [startDate, endDate]: [number, number]
-  ) => {
-    let stamp = startDate;
-    const out = [stamp];
-    const diffs: number[] = [];
-
-    while (level.getNextTimestamp(stamp) < endDate) {
-      const current = Math.min(endDate, level.getNextTimestamp(stamp));
-      diffs.push(current - stamp);
-      out.push(current);
-      stamp = current;
-    }
-
-    diffs.push(
-      Math.min(
-        out[out.length - 1] - out[out.length - 2],
-        endDate - out[out.length - 1]
-      )
-    );
-
-    return out.map((timestamp, i) => ({
-      date: new Date(timestamp),
-      getLabel: level.getLabel,
-      diff: diffs[i],
-    }));
-  };
-  const dateViewLevelsRanges = dateViewLevels.map((level) =>
-    levelToDates(level, dateRange)
-  );
   const ganttWidth = (endDate - startDate) / msPerPixel;
 
+  const dateViewLevelsRanges = useMemo(
+    () =>
+      dateViewLevels.map((level) => levelToDates(level, [startDate, endDate])),
+    [dateViewLevels, startDate, endDate]
+  );
+  const backgroundGrid = useMemo(
+    () =>
+      generateBackground(
+        dateViewLevelsRanges,
+        ganttWidth,
+        msPerPixel,
+        dateViewLevels
+      ),
+    [dateViewLevels, startDate, endDate]
+  );
+  const resourceEventsMap = useMemo(() => {
+    const out: Record<string, GanttEvent<EventT>[]> = {};
+
+    for (const event of events) {
+      if (!out[event.resource]) {
+        out[event.resource] = [];
+      }
+      out[event.resource].push(event);
+    }
+
+    return out;
+  }, [events]);
+
+  const selectionGeoSearch = (startResource: string, endResource: string) => {
+    const resourcesInSelection = resources.slice(resources.findIndex(el => el.id === startResource), resources.findIndex(el => el.id === endResource))
+    console.log(resourcesInSelection);
+  }
   const handleganttScroll: React.UIEventHandler<HTMLElement> = (scroll) => {
     if (resourceScrollContainer.current) {
       resourceScrollContainer.current.scrollTop =
@@ -93,65 +92,88 @@ export const Gantt = <EventT, ResourceT>(
       ganttScrollContainer.current.scrollTop = scroll.currentTarget.scrollTop;
     }
   };
-
-  const resourceEventsMap = useMemo(() => {
-    const out: Record<string, GanttEvent<EventT>[]> = {};
-
-    for (const event of events) {
-      if (!out[event.resource]) {
-        out[event.resource] = [];
-      }
-      out[event.resource].push(event);
-    }
-
-    return out;
-  }, [events]);
-
   const resizeRow = (entry: ResizeObserverEntry) => {
-    queueMicrotask(() => {
-      const resizedId = (entry.target as HTMLElement).getAttribute(
-        "data-resource"
-      );
-      const el = (resourceScrollContainer.current as HTMLElement).querySelector(
-        `[data-resource="${resizedId}"]`
-      );
-      el?.setAttribute("style", `height: ${entry.contentRect.height}px`);
-    });
+    const resizedId = entry.target.getAttribute("data-resource");
+    const resourceContainer = resourceScrollContainer.current;
+
+    if (!resourceContainer) return;
+
+    const resourceRow = resourceContainer.querySelector(
+      `[data-resource="${resizedId}"]`
+    );
+    if (!resourceRow) return;
+    resourceRow.setAttribute("style", `height: ${entry.contentRect.height}px`);
   };
+  const selectionRectStart = (event) => {
+    let el: HTMLElement | null = event.target as HTMLElement;
 
-  const theme = useTheme();
-
-  const drawLines = (level, color, width, msPerPixel, limit) => {
-    let prevSize = 0;
-
-    const outSizes = [];
-
-    for (const { diff } of level) {
-      prevSize += diff / msPerPixel;
-      if (prevSize !== limit) {
-        outSizes.push(prevSize);
-      }
+    while (el && el.getAttribute("data-role") !== "gantt") {
+      if (el.getAttribute("data-role") === "gantt-event") return;
+      el = el.parentElement;
     }
 
-    return outSizes.map(
-      (size) =>
-        `<line x1='${size}' y1='0' x2='${size}' y2='100%' stroke='${color}' stroke-width='${width}' />`
-    );
+    const element = ganttScrollContainer.current;
+    if (!element) return;
+
+    element.setPointerCapture(event.pointerId);
+    const { x, y } = element.getBoundingClientRect();
+    const data = {
+      rectStartX: event.clientX - x + element.scrollLeft,
+      rectStartY: event.clientY - y + element.scrollTop,
+      elementStartX: x - element.scrollLeft,
+      elementStartY: y - element.scrollTop,
+    };
+
+    selectData.current = {
+      startResource: event.target?.getAttribute('data-resource'),
+      startTimestamp: startDate + (data.rectStartX * msPerPixel),
+    }
+
+    element.onpointermove = (event) => {
+      const { clientY, clientX, target } = event;
+
+      console.log(target);
+
+      let el: HTMLElement = target as HTMLElement;
+      //
+      //while (el && !el.getAttribute('data-resource')) {
+      //  console.log(el.getAttribute('data-resource'))
+      //  el = el.parentElement as HTMLElement;
+      //}
+      
+      console.log(el.getAttribute('data-resource'))
+
+      if (!ganttScrollContainer.current || !selectRect.current) return;
+
+      const gantt = ganttScrollContainer.current;
+
+      const endX = clientX - gantt.getBoundingClientRect().x + gantt.scrollLeft;
+      const endY = clientY - gantt.getBoundingClientRect().y + gantt.scrollTop;
+
+      selectRect.current.style.display = "unset";
+
+      selectRect.current.style.left = `${Math.min(
+        data.rectStartX as number,
+        endX
+      )}px`;
+      selectRect.current.style.top = `${Math.min(
+        data.rectStartY as number,
+        endY
+      )}px`;
+      selectRect.current.style.width = `${Math.abs(
+        (data.rectStartX as number) - endX
+      )}px`;
+      selectRect.current.style.height = `${Math.abs(
+        (data.rectStartY as number) - endY
+      )}px`;
+    };
   };
-
-  const backgroundGrid = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${ganttWidth}' height='100%'>${dateViewLevelsRanges
-    .flatMap((level, i) =>
-      drawLines(
-        level,
-        dateViewLevels[i].color,
-        dateViewLevels[i].width,
-        msPerPixel,
-        ganttWidth
-      ).join("")
-    )
-    .join("")}</svg>")`;
-
-  const selectRect = useRef<HTMLElement>(null);
+  const selectionRectEnd = (event) => {
+    if (!selectRect.current || !ganttScrollContainer.current) return;
+    ganttScrollContainer.current.onpointermove = null;
+    ganttScrollContainer.current.releasePointerCapture(event.pointerId);
+    selectRect.current.style.display = "none";
+  };
 
   useEffect(() => {
     const element = ganttScrollContainer.current;
@@ -180,9 +202,6 @@ export const Gantt = <EventT, ResourceT>(
         sx={{
           display: "grid",
           gridTemplateColumns: "300px 8px auto",
-          background: "#fafafa",
-          borderTop: `2px solid ${theme.palette.grey[400]}`,
-          boxShadow: "0 4px 8px -2px rgba(0,0,0,.15)",
         }}
       >
         <Box
@@ -198,7 +217,7 @@ export const Gantt = <EventT, ResourceT>(
             width: "100%",
             overflowX: "scroll",
             overflowY: "scroll",
-            scrollbarHeight: "none",
+            scrollbarWidth: "none",
             msOverflowStyle: "none",
             "::-webkit-scrollbar": {
               height: "none",
@@ -296,62 +315,8 @@ export const Gantt = <EventT, ResourceT>(
             position: "relative",
             userSelect: "none",
           }}
-          onPointerDown={(event) => {
-            let el: HTMLElement | null = event.target as HTMLElement;
-
-            while (el && el.getAttribute("data-role") !== "gantt") {
-              if (el.getAttribute("data-role") === "gantt-event") return;
-              el = el.parentElement;
-            }
-
-            const element = ganttScrollContainer.current;
-            if (!element) return;
-
-            element.setPointerCapture(event.pointerId);
-            const { x, y } = element.getBoundingClientRect();
-            const data = {
-              rectStartX: event.clientX - x + element.scrollLeft,
-              rectStartY: event.clientY - y + element.scrollTop,
-              elementStartX: x - element.scrollLeft,
-              elementStartY: y - element.scrollTop,
-            };
-
-            element.onpointermove = (event) => {
-              const { clientY, clientX } = event;
-
-              if (!ganttScrollContainer.current || !selectRect.current) return;
-
-              const gantt = ganttScrollContainer.current;
-
-              const endX =
-                clientX - gantt.getBoundingClientRect().x + gantt.scrollLeft;
-              const endY =
-                clientY - gantt.getBoundingClientRect().y + gantt.scrollTop;
-
-              selectRect.current.style.display = "unset";
-
-              selectRect.current.style.left = `${Math.min(
-                data.rectStartX as number,
-                endX
-              )}px`;
-              selectRect.current.style.top = `${Math.min(
-                data.rectStartY as number,
-                endY
-              )}px`;
-              selectRect.current.style.width = `${Math.abs(
-                (data.rectStartX as number) - endX
-              )}px`;
-              selectRect.current.style.height = `${Math.abs(
-                (data.rectStartY as number) - endY
-              )}px`;
-            };
-          }}
-          onPointerUp={(event) => {
-            if (!selectRect.current || !ganttScrollContainer.current) return;
-            ganttScrollContainer.current.onpointermove = null;
-            ganttScrollContainer.current.releasePointerCapture(event.pointerId);
-            selectRect.current.style.display = "none";
-          }}
+          onPointerDown={selectionRectStart}
+          onPointerUp={selectionRectEnd}
         >
           <Box
             sx={{
@@ -362,10 +327,11 @@ export const Gantt = <EventT, ResourceT>(
           >
             {resources.map((resource) => (
               <TimeRangeRow
+                setEventSelection={setEvenSelection}
                 EventSlot={Event}
                 Placeholder={Placeholder}
                 events={resourceEventsMap[resource.id] ?? []}
-                dateRange={dateRange}
+                dateRange={[startDate, endDate]}
                 resource={resource}
                 tickWidthPixels={msPerPixel}
                 key={resource.id}

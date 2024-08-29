@@ -1,40 +1,74 @@
-const reactRender = (preview: React.ReactNode, container: HTMLElement) => {
-  const root = createRoot(container);
-  root.render(preview);
-  return () => root.unmount();
-};
-const setDndImage = (preview: React.ReactNode, setDragImage, offset) => {
-  const container = document.createElement("div");
+const drawLines = (
+  level: { diff: number }[],
+  color: string,
+  width: number,
+  msPerPixel: number,
+  limit: number
+) => {
+  let prevSize = 0;
 
-  Object.assign(container.style, {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    zIndex: 2147483647, // max possible
-    pointerEvents: "none",
-  });
+  const outSizes = [];
 
-  document.body.append(container);
-
-  const unmount = reactRender(preview, container);
-
-  queueMicrotask(() => {
-    const { userAgent } = navigator;
-    if (userAgent.includes("AppleWebKit") && !userAgent.includes("Chrome")) {
-      const rect = container.getBoundingClientRect();
-
-      if (rect.width === 0) {
-        return;
-      }
-
-      container.style.left = `-${rect.width - 0.0001}px`;
+  for (const { diff } of level) {
+    prevSize += diff / msPerPixel;
+    if (prevSize !== limit) {
+      outSizes.push(prevSize);
     }
+  }
 
-    setDragImage?.(container, offset.x, offset.y);
-  });
+  return outSizes.map(
+    (size) =>
+      `<line x1='${size}' y1='0' x2='${size}' y2='100%' stroke='${color}' stroke-width='${width}' />`
+  );
+};
 
-  return () => {
-    unmount?.();
-    document.body.removeChild(container);
-  };
+export const generateBackground = (
+  levels: any,
+  limit: number,
+  msPerPixel: number,
+  settings: any
+) => {
+  return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${limit}' height='100%'>${levels
+    .flatMap((level, i) =>
+      drawLines(
+        level,
+        settings[i].color,
+        settings[i].width,
+        msPerPixel,
+        limit
+      ).join("")
+    )
+    .join("")}</svg>")`;
+};
+
+export const levelToDates = (
+  level: {
+    getNextTimestamp: (prev: number) => number;
+    getLabel: (date: Date) => any;
+  },
+  [startDate, endDate]: [number, number]
+) => {
+  let stamp = startDate;
+  const out = [stamp];
+  const diffs: number[] = [];
+
+  while (level.getNextTimestamp(stamp) < endDate) {
+    const current = Math.min(endDate, level.getNextTimestamp(stamp));
+    diffs.push(current - stamp);
+    out.push(current);
+    stamp = current;
+  }
+
+  diffs.push(
+    Math.min(
+      out[out.length - 1] - out[out.length - 2],
+      endDate - out[out.length - 1]
+    )
+  );
+
+  return out.map((timestamp, i) => ({
+    date: new Date(timestamp),
+    getLabel: level.getLabel,
+    diff: diffs[i],
+  }));
 };
