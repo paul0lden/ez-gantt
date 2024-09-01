@@ -1,3 +1,4 @@
+import type React from "react";
 import type { ReactElement, ReactNode } from "react";
 
 type GanttEvent<EventT> = {
@@ -15,7 +16,7 @@ type PlaceholderProps = {
   width: number;
   level: number;
   x: number;
-}
+};
 
 type GanttSlotsProps<EventT, ResourceT> = {
   Event: GanttEvent<EventT>;
@@ -39,7 +40,6 @@ type DateViewLevel = {
 };
 
 interface GanttProps<EventT, ResourceT> {
-  setEvenSelection?: (id: string) => void;
   schedulingThreeshold: number;
   msPerPixel: number;
   dateViewLevels: DateViewLevel[];
@@ -55,7 +55,7 @@ interface GanttProps<EventT, ResourceT> {
 }
 
 type TimeRangeProps<EventT, ResourceT> = {
-  setEventSelection?: (id: string) => void
+  setSelectedEvents: (newState: string[] | ((prev: string[]) => string[])) => void;
   schedulingThreeshold: number;
   events: GanttEvent<EventT>[];
   resource: GanttResource<ResourceT>;
@@ -66,6 +66,10 @@ type TimeRangeProps<EventT, ResourceT> = {
     resource: GanttResource<ResourceT>
   ) => void;
   resizeRow: (arg0: any) => any;
+  Placeholder: React.ReactElement;
+  EventSlot: React.ReactElement;
+  placeholderProps: any;
+  eventProps: any;
 };
 
 export type {

@@ -1,0 +1,83 @@
+.gantt-wrapper {
+  height: 100vh;
+  display: flex;
+  flex-flow: column;
+  grid-template-rows: auto 1fr;
+}
+
+.grid {
+  display: grid;
+}
+
+.splitter {
+  background: #ebebeb;
+  cursor: ew-resize;
+}
+
+.gantt-header {
+  width: 100%;
+  transform: translate3d(0, 0, 0);
+  overflow-x: scroll;
+  overflow-y: scroll;
+  scrollbar-width: none;
+  ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    height: "none";
+  }
+}
+
+.h-full {
+  height: 100%;
+}
+
+.date-area {
+  height: 100%;
+  display: flex;
+  flex-flow: column;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.date-cell {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+.resource-wrapper {
+  transform: translate3d(0, 0, 0);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-x: scroll;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
+  &::-webkit-scrollbar {
+    width: 0px;
+  }
+}
+
+.select-rect {
+  display: none;
+  background: rgba(125, 125, 255, 0.2);
+  box-sizing: content-box;
+  border: 2px solid aqua;
+  position: absolute;
+}
+
+.gantt {
+  width: 100%;
+  height: 100%;
+  overflow-x: scroll;
+  position: relative;
+  user-select: none;
+}
+
