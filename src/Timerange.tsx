@@ -13,7 +13,10 @@ export const TimeRangeRow = <EventT, ResourceT>(
   const {
     EventSlot,
     Placeholder,
-    setEventSelection,
+    placeholderProps = {},
+    eventProps = {},
+    setSelectedEvents,
+    selectedEvents,
     resource,
     events,
     dateRange: [startDate],
@@ -232,6 +235,9 @@ export const TimeRangeRow = <EventT, ResourceT>(
         paddingBlock: 1,
         borderBottom: "2px solid rgba(0,0,0,.2)",
       }}
+      onClick={() => {
+        setSelectedEvents([]);
+      }}
       data-resource={resource.id}
     >
       {eventsByLevel.flatMap(
@@ -240,10 +246,21 @@ export const TimeRangeRow = <EventT, ResourceT>(
             event ? (
               <GanttElementWrapper
                 {...event}
-                onClick={(e) => e.shiftKey ? 
-                  setEventSelection(event.id) : null
-                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  (e.nativeEvent as PointerEvent).shiftKey
+                    ? setSelectedEvents((prev) =>
+                        prev.includes(event.id)
+                          ? [...prev.splice(prev.indexOf(event.id), 1)]
+                          : [...prev, event.id]
+                      )
+                    : setSelectedEvents([event.id]);
+                }}
                 EventSlot={EventSlot}
+                eventProps={{
+                  ...eventProps,
+                  selected: selectedEvents.includes(event.id),
+                }}
                 dateRange={[startDate]}
                 level={i}
                 rowId={resource.id}
@@ -256,7 +273,9 @@ export const TimeRangeRow = <EventT, ResourceT>(
             )
           ) ?? []
       )}
-      {placeholderPos && <Placeholder {...placeholderPos} />}
+      {placeholderPos && (
+        <Placeholder {...placeholderProps} {...placeholderPos} />
+      )}
     </Box>
   );
 };
