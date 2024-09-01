@@ -9,6 +9,7 @@ import {
   startOfDay,
   format,
   startOfMonth,
+  startOfDecade,
 } from "date-fns";
 import { Set as ImmutableSet } from "immutable";
 
@@ -81,17 +82,13 @@ const Event = (props) => {
         data-role="resize-left"
         onPointerDown={(e) => {
           e.preventDefault();
-          //isResizing.current = true;
           e.target.setPointerCapture(e.pointerId);
         }}
         onPointerMove={(e) => {
           e.preventDefault();
-          //if (isResizing.current) {
-          //}
         }}
         onPointerUp={(e) => {
           e.preventDefault();
-          //isResizing.current = false;
           e.target.releasePointerCapture(e.pointerId);
         }}
         sx={{ width: 12, cursor: "ew-resize" }}
@@ -123,32 +120,6 @@ const Placeholder = ({ width, x, level }) => {
 
 function App() {
   const [events, setEvents] = useState(getEvents());
-  const [selection, setSelection] = useState<ImmutableSet<string>>(
-    new ImmutableSet<string>()
-  );
-
-  const eventSelect = (
-    id: string,
-    operation: "toggle" | "clear" | "add" | "remove"
-  ) => {
-    switch (operation) {
-      case "clear":
-        setSelection((prev) => prev.clear());
-        break;
-
-      case "add":
-        setSelection((prev) => prev.add(id));
-        break;
-
-      case "remove":
-        setSelection((prev) => prev.remove(id));
-        break;
-
-      default:
-        setSelection((prev) => (prev.has(id) ? prev.remove(id) : prev.add(id)));
-        break;
-    }
-  };
 
   const handleEventDrop = (event, resource, dropArea) => {
     setEvents((prev) => {
@@ -175,12 +146,11 @@ function App() {
       <Gantt
         handleEventDrop={handleEventDrop}
         dateRange={[
-          startOfDay(new Date()).valueOf(),
+          startOfDay(startOfDecade(new Date())).valueOf(),
           addDays(startOfDay(new Date()), 5).valueOf(),
         ]}
         msPerPixel={60 * 1000}
         events={events}
-        setEvenSelection={eventSelect}
         dateViewLevels={[
           {
             getNextTimestamp: (prevRange: number) =>
@@ -210,7 +180,7 @@ function App() {
             <Event
               {...props}
               sx={{
-                outline: selection.has(props.id) ? "2px red solid" : "unset",
+                outline: props.selected ? "2px red solid" : "unset",
               }}
             />
           ),

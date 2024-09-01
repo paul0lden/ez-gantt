@@ -1,4 +1,5 @@
-import React, { ReactEventHandler, useEffect, useRef, useState } from "react";
+import type { ReactEventHandler} from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box } from "@mui/material";
 
 import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -17,6 +18,7 @@ export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerE
   const {
     onClick,
     EventSlot,
+    eventProps,
     startDate,
     endDate,
     dateRange,
@@ -135,6 +137,7 @@ export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerE
         id={id}
         eventHeight={eventHeight}
         tickWidthPixels={tickWidthPixels}
+        {...eventProps}
       />
     </Box>
   );
