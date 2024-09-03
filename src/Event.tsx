@@ -1,12 +1,11 @@
-import type { ReactEventHandler} from "react";
-import React, { useEffect, useRef, useState } from "react";
-import { Box } from "@mui/material";
+import type { ReactEventHandler } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
-import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
-import { preserveOffsetOnSource } from "@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source";
-import { createRoot } from "react-dom/client";
-import { getEventType } from "./defaults";
+import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
+import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
+import { createRoot } from 'react-dom/client'
+import { getEventType } from './defaults'
 
 /**
  * Anything rendered inside of gantt should be movable within it
@@ -14,7 +13,9 @@ import { getEventType } from "./defaults";
  * Everything else belongs to the element logic itself (like rersizing)
  *
  */
-export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerEvent>}) => {
+function GanttElementWrapper(props: {
+  onClick: ReactEventHandler<PointerEvent>
+}) {
   const {
     onClick,
     EventSlot,
@@ -27,21 +28,23 @@ export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerE
     tickWidthPixels,
     id,
     rowId,
-  } = props;
+    selected,
+  } = props
 
-  const [dragging, setDragging] = useState(false);
+  const [dragging, setDragging] = useState(false)
 
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const element = ref.current;
+    const element = ref.current
 
-    if (!element) return;
+    if (!element)
+      return
 
     return draggable({
       element,
       getInitialData: (e) => {
-        const dragDiffX = e.input.clientX - e.element.getBoundingClientRect().x;
+        const dragDiffX = e.input.clientX - e.element.getBoundingClientRect().x
         return {
           startDate,
           endDate,
@@ -50,13 +53,13 @@ export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerE
           dragDiffX,
           width: e.element.getBoundingClientRect().width,
           type: getEventType(),
-        };
+        }
       },
       getInitialDataForExternal: (e) => {
-        const dragDiffX = e.input.clientX - e.element.getBoundingClientRect().x;
+        const dragDiffX = e.input.clientX - e.element.getBoundingClientRect().x
         return {
           [getEventType({
-            dataType: "json",
+            dataType: 'json',
             metadata: [
               `${dragDiffX.toString()}`,
               `${e.element.getBoundingClientRect().width}`,
@@ -65,13 +68,13 @@ export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerE
             ...event,
             rowId,
           }),
-        };
+        }
       },
       onDragStart() {
-        setDragging(true);
+        setDragging(true)
       },
       onDrop() {
-        setDragging(false);
+        setDragging(false)
       },
       onGenerateDragPreview: ({ source, location, nativeSetDragImage }) => {
         setCustomNativeDragPreview({
@@ -81,14 +84,14 @@ export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerE
             input: location.current.input,
           }),
           render({ container }) {
-            const root = createRoot(container);
+            const root = createRoot(container)
             root.render(
-              <Box
-                sx={{
+              <div
+                style={{
                   height: eventHeight,
                   width:
-                    (endDate - dateRange[0] - (startDate - dateRange[0])) /
-                    tickWidthPixels,
+                    (endDate - dateRange[0] - (startDate - dateRange[0]))
+                    / tickWidthPixels,
                 }}
               >
                 <EventSlot
@@ -100,33 +103,32 @@ export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerE
                   eventHeight={eventHeight}
                   tickWidthPixels={tickWidthPixels}
                 />
-              </Box>
-            );
-            return () => root.unmount();
+              </div>,
+            )
+            return () => root.unmount()
           },
-        });
+        })
       },
-    });
-  }, [endDate, startDate, tickWidthPixels]);
+    })
+  }, [endDate, startDate, tickWidthPixels])
 
-  if (dragging) return null;
+  if (dragging)
+    return null
 
   return (
-    <Box
+    <div
       data-role="gantt-event"
+      data-event-id={id}
+      className="gantt-event"
       ref={ref}
       onClick={onClick}
-      sx={{
-        height: "100%",
-        zIndex: 10,
-        cursor: "pointer",
-        maxHeight: eventHeight,
+      style={{
+        maxHeight: `${eventHeight}px`,
         left: `${(startDate - dateRange[0]) / tickWidthPixels}px`,
         width:
-          (endDate - dateRange[0] - (startDate - dateRange[0])) /
-          tickWidthPixels,
-        top: Math.max(level * (eventHeight + 8)) + 8,
-        position: "absolute",
+          `${(endDate - dateRange[0] - (startDate - dateRange[0]))
+          / tickWidthPixels}px`,
+        top: `${Math.max(level * (eventHeight + 8)) + 8}px`,
       }}
     >
       <EventSlot
@@ -137,8 +139,11 @@ export const GanttElementWrapper = (props: { onClick: ReactEventHandler<PointerE
         id={id}
         eventHeight={eventHeight}
         tickWidthPixels={tickWidthPixels}
+        selected={selected}
         {...eventProps}
       />
-    </Box>
-  );
-};
+    </div>
+  )
+}
+
+export default React.memo(GanttElementWrapper)
