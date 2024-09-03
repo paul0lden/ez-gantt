@@ -18,6 +18,8 @@ function GanttElementWrapper(props: {
 }) {
   const {
     onClick,
+    event,
+    schedulingThreeshold,
     EventSlot,
     eventProps,
     startDate,
@@ -28,6 +30,7 @@ function GanttElementWrapper(props: {
     tickWidthPixels,
     id,
     rowId,
+    updateEvent,
     selected,
   } = props
 
@@ -125,9 +128,10 @@ function GanttElementWrapper(props: {
       style={{
         maxHeight: `${eventHeight}px`,
         left: `${(startDate - dateRange[0]) / tickWidthPixels}px`,
-        width:
-          `${(endDate - dateRange[0] - (startDate - dateRange[0]))
-          / tickWidthPixels}px`,
+        width: `${
+          (endDate - dateRange[0] - (startDate - dateRange[0]))
+          / tickWidthPixels
+        }px`,
         top: `${Math.max(level * (eventHeight + 8)) + 8}px`,
       }}
     >
@@ -137,9 +141,12 @@ function GanttElementWrapper(props: {
         dateRange={dateRange}
         i={level}
         id={id}
+        event={event}
+        updateEvent={updateEvent}
         eventHeight={eventHeight}
         tickWidthPixels={tickWidthPixels}
         selected={selected}
+        schedulingThreeshold={schedulingThreeshold}
         {...eventProps}
       />
     </div>
