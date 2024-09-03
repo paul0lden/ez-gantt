@@ -27,6 +27,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     slots: { Placeholder, Resource, Event },
     slotsProps: { placeholderProps, resourceProps, eventProps } = {},
     dateViewLevels,
+    updateEvent,
     handleEventDrop,
     resourceColumnDefaultWidth = 300,
   } = props
@@ -220,11 +221,6 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           className="gantt"
           onPointerDown={selectionRectStart}
           onPointerUp={selectionRectEnd}
-          onClick={(e) => {
-            if (e.button !== 0 || e.shiftKey)
-              return
-            setSelectedEvents([])
-          }}
         >
           <div
             style={{
@@ -246,6 +242,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                       ? (
                           <GanttElementWrapper
                             {...event}
+                            event={event}
                             onClick={handleEventClick}
                             EventSlot={Event}
                             selected={resourceSelectionMap[resource.id]?.includes(event)}
@@ -255,6 +252,8 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                             eventHeight={45}
                             tickWidthPixels={msPerPixel}
                             key={event.id}
+                            schedulingThreeshold={schedulingThreeshold}
+                            updateEvent={updateEvent}
                           />
                         )
                       : null

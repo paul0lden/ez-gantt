@@ -10,6 +10,7 @@ import {
 } from 'date-fns'
 import { getEvents, resources } from './data'
 import { Gantt } from './Gantt'
+import { ResizeableEvent } from './ResizeableEvent'
 
 function Resource({ id }) {
   return (
@@ -60,49 +61,47 @@ function Event(props) {
     level,
     eventHeight,
     tickWidthPixels,
+    schedulingThreeshold,
     id,
+    event,
     selected,
+    updateEvent,
     ...rest
   } = props
 
   return (
-    <Box
-      {...rest}
-      sx={{
-        'display': 'flex',
-        'background': 'grey',
-        'height': '100%',
-        ':hover': {
-          outline: '2px aqua solid',
-        },
-        'outline': selected ? '2px red solid' : 'unset',
-        'borderRadius': 2,
-        ...rest.sx,
-      }}
+    <ResizeableEvent
+      schedulingThreeshold={schedulingThreeshold}
+      startDate={startDate}
+      endDate={endDate}
+      event={event}
+      tickWidthPixels={tickWidthPixels}
+      id={id}
+      dateRange={dateRange}
+      updateEvent={updateEvent}
     >
       <Box
-        data-role="resize-left"
-        onPointerDown={(e) => {
-          e.preventDefault()
-          e.target.setPointerCapture(e.pointerId)
+        {...rest}
+        sx={{
+          'display': 'flex',
+          'background': 'grey',
+          'height': '100%',
+          ':hover': {
+            outline: '2px aqua solid',
+          },
+          'outline': selected ? '2px red solid' : 'unset',
+          'borderRadius': 2,
+          ...rest.sx,
         }}
-        onPointerMove={(e) => {
-          e.preventDefault()
-        }}
-        onPointerUp={(e) => {
-          e.preventDefault()
-          e.target.releasePointerCapture(e.pointerId)
-        }}
-        sx={{ width: 12, cursor: 'ew-resize' }}
-      />
-      <Box sx={{ overflow: 'hidden', width: 'calc(100% - 24px)' }}>
-        {id}
-        {' '}
-        -
-        {new Date(startDate).toLocaleString()}
+      >
+        <Box sx={{ overflow: 'hidden', marginInline: '16px' }}>
+          {id}
+          {' '}
+          -
+          {new Date(startDate).toLocaleString()}
+        </Box>
       </Box>
-      <Box data-role="resize-right" sx={{ width: 12, cursor: 'ew-resize' }} />
-    </Box>
+    </ResizeableEvent>
   )
 }
 
@@ -158,13 +157,20 @@ function App() {
     [],
   )
 
+  const updateEvent = useCallback((event) => {
+    console.log(event)
+    setEvents(prev => prev.map(el => el.id === event.id ? event : el))
+  }, [])
+
   return (
     <Box className="App" sx={{ height: '100vh' }}>
       <Gantt
         handleEventDrop={handleEventDrop}
         dateRange={dateRange}
         msPerPixel={60 * 1000}
+        schedulingThreeshold={30 * 60 * 1000}
         events={events}
+        updateEvent={updateEvent}
         dateViewLevels={[
           {
             getNextTimestamp: (prevRange: number) =>
