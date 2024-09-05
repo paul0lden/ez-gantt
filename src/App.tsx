@@ -85,7 +85,7 @@ function Event(props) {
         sx={{
           'display': 'flex',
           'background': 'grey',
-          'height': '100%',
+          'height': 60,
           ':hover': {
             outline: '2px aqua solid',
           },
@@ -107,18 +107,19 @@ function Event(props) {
 
 const MemoEvent = React.memo(Event)
 
-function Placeholder({ width, x, level }) {
+function Placeholder({ width, x, height, level }) {
+  console.log(level)
   return (
     <Box
       sx={{
-        width,
-        position: 'absolute',
+        height: `${height}px`,
         transition: 'left .05s linear',
-        top: level * 45 + level * 8 + 8,
-        height: 45,
         background: 'rgba(0, 0, 0, .25)',
         borderRadius: 2,
-        left: x,
+        gridColumnStart: x + 1,
+        gridColumnEnd: x + width + 1,
+        gridRowStart: level,
+        gridRowEnd: level + 1,
       }}
     />
   )
@@ -158,7 +159,6 @@ function App() {
   )
 
   const updateEvent = useCallback((event) => {
-    console.log(event)
     setEvents(prev => prev.map(el => el.id === event.id ? event : el))
   }, [])
 
