@@ -17,6 +17,7 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
     tickWidthPixels,
     handleEventDrop,
     resizeRow,
+    width,
     schedulingThreeshold,
     eventsByLevel,
     children,
@@ -27,6 +28,7 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
   const [placeholderPos, setPlaceholderPos] = useState<{
     width: number
     x: number
+    height: number
     level: number
   } | null>(null)
 
@@ -39,10 +41,19 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
     }
   })
 
-  const drawPlaceholder = (rowRelativeX: number, width: number, id: string) => {
+  const drawPlaceholder = ({
+    rowRelativeX,
+    width,
+    id,
+    height,
+  }: {
+    rowRelativeX: number
+    width: number
+    id: string
+    height: number
+  }) => {
     const roundValue
       = Math.round(rowRelativeX / (schedulingThreeshold / tickWidthPixels))
-      * (schedulingThreeshold / tickWidthPixels)
 
     const level = checkLevel(
       {
@@ -59,10 +70,13 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
       tickWidthPixels,
     )
 
-    if (placeholderPos?.x !== roundValue || placeholderPos?.level !== level) {
+    if (placeholderPos?.x !== roundValue
+    // || placeholderPos?.level !== level
+    ) {
       setPlaceholderPos({
-        width,
+        width: width / (schedulingThreeshold / tickWidthPixels),
         x: roundValue,
+        height,
         level,
       })
     }
@@ -119,7 +133,10 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
             if (!data.x)
               return
 
-            drawPlaceholder(input.clientX - diffX - data.x, width)
+            drawPlaceholder({
+              rowRelativeX: input.clientX - diffX - data.x,
+              width,
+            })
           }
         },
         onDrop({ source, location }) {
@@ -158,24 +175,33 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
           const start = startDate + roundValue * tickWidthPixels
           const end = start + width * tickWidthPixels
 
-          handleEventDrop(source.data, location.current.dropTargets[0].data, {
-            startDate: start,
-            endDate: end,
-          })
+          handleEventDrop(
+            source.data,
+            location.current.dropTargets[0].data,
+            {
+              startDate: start,
+              endDate: end,
+            },
+          )
           setPlaceholderPos(null)
         },
         onDrag({ location, source }) {
           const {
             current: { input, dropTargets },
           } = location
-          const { dragDiffX, width, id } = source.data
+          const { dragDiffX, width, id, height } = source.data
 
           const target = dropTargets.find(el => el.data.location === 'row')
 
           if (!dragDiffX || !width || !target)
             return
 
-          drawPlaceholder(input.clientX - target.data.x - dragDiffX, width, id)
+          drawPlaceholder({
+            rowRelativeX: input.clientX - target.data.x - dragDiffX,
+            width,
+            id,
+            height,
+          })
         },
       }),
     )
@@ -186,14 +212,11 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
       ref={rowRef}
       className="timerange-row"
       style={{
-        height:
-          `${Math.max(
-            placeholderPos?.level ? placeholderPos.level + 1 : 0,
-            eventsByLevel.length,
-          ) * eventHeight + (Math.max(
-            placeholderPos?.level ? placeholderPos.level : 0,
-            eventsByLevel.length - 1,
-          )) * 8}px`,
+        gridTemplateColumns: `repeat(${
+          width / (schedulingThreeshold / tickWidthPixels)
+        }, ${
+          schedulingThreeshold / tickWidthPixels
+        }px)`,
         minHeight: `${eventHeight}px`,
       }}
       data-resource={resource.id}

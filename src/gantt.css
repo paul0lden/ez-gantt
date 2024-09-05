@@ -85,19 +85,20 @@
 }
 
 .timerange-row {
+  padding-block: 8px;
   width: 100%;
-  display: flex;
+  display: grid;
   overflow: hidden;
   transition: height 0.1s linear;
   position: relative;
+  row-gap: 8px;
   box-sizing: content-box;
-  padding-block: 8px;
   border-bottom: 2px solid rgba(0, 0, 0, .2);
 }
 
 .gantt-event {
-  height: 100%;
+  height: fit-content;
   z-index: 10;
   cursor: pointer;
-  position: absolute;
+  position: relative;
 }

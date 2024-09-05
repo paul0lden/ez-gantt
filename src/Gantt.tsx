@@ -269,6 +269,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                   resource={resource}
                   eventsByLevel={eventsByLevel}
                   tickWidthPixels={msPerPixel}
+                  width={ganttWidth}
                   key={resource.id}
                   resizeRow={resizeRow}
                   schedulingThreeshold={schedulingThreeshold}
