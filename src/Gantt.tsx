@@ -113,7 +113,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
   }, [events, selectedEvents])
 
   const resizeRow = useCallback((entry: ResizeObserverEntry) => {
-    const resizedId = entry.target.getAttribute('data-resource')
+    const resizedId = entry.target.getAttribute('data-timerange')
     const resourceContainer = resourceScrollContainer.current
 
     if (!resourceContainer)
