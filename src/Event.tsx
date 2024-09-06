@@ -54,9 +54,9 @@ function GanttElementWrapper(props: {
           endDate,
           id,
           rowId,
+          width: e.element.getBoundingClientRect().width,
           height: e.element.getBoundingClientRect().height,
           dragDiffX,
-          width: e.element.getBoundingClientRect().width,
           type: getEventType(),
         }
       },
@@ -68,6 +68,7 @@ function GanttElementWrapper(props: {
             metadata: [
               `${dragDiffX.toString()}`,
               `${e.element.getBoundingClientRect().width}`,
+              `${e.element.getBoundingClientRect().height}`,
             ],
           })]: JSON.stringify({
             ...event,
