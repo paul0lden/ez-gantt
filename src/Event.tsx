@@ -32,6 +32,7 @@ function GanttElementWrapper(props: {
     rowId,
     updateEvent,
     selected,
+    gridLayout,
   } = props
 
   const [dragging, setDragging] = useState(false)
@@ -80,11 +81,7 @@ function GanttElementWrapper(props: {
       onDrop() {
         setDragging(false)
       },
-      onGenerateDragPreview: ({
-        source,
-        location,
-        nativeSetDragImage,
-      }) => {
+      onGenerateDragPreview: ({ source, location, nativeSetDragImage }) => {
         setCustomNativeDragPreview({
           nativeSetDragImage,
           getOffset: preserveOffsetOnSource({
@@ -129,14 +126,26 @@ function GanttElementWrapper(props: {
       ref={ref}
       onClick={onClick}
       style={{
-        gridColumnStart:
-          (startDate - dateRange[0])
-          / (schedulingThreeshold) + 1,
-        gridColumnEnd:
-          (endDate - dateRange[0])
-          / (schedulingThreeshold) + 1,
-        gridRowStart: level,
-        gridRowEnd: level + 1,
+        height: gridLayout ? 'fit-content' : '100%',
+        position: gridLayout ? 'relative' : 'absolute',
+        ...(gridLayout
+          ? {
+              gridColumnStart:
+                (startDate - dateRange[0]) / schedulingThreeshold + 1,
+              gridColumnEnd:
+                (endDate - dateRange[0]) / schedulingThreeshold + 1,
+              gridRowStart: level + 1,
+              gridRowEnd: level + 2,
+            }
+          : {
+              maxHeight: `${eventHeight}px`,
+              left: `${(startDate - dateRange[0]) / tickWidthPixels}px`,
+              width: `${
+                (endDate - dateRange[0] - (startDate - dateRange[0]))
+                / tickWidthPixels
+              }px`,
+              top: `${Math.max(level * (eventHeight + 8)) + 8}px`,
+            }),
       }}
     >
       <EventSlot

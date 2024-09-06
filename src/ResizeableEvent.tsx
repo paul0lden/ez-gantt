@@ -44,8 +44,10 @@ export function ResizeableEvent(props) {
       ) * (schedulingThreeshold / tickWidthPixels)
       const newStartX = Math.min(startX + diff, startX + startWidth)
       const newWidth = Math.max(startWidth - diff, diff - startWidth)
-      element.current.style.left = `${newStartX}px`
-      element.current.style.width = `${newWidth}px`
+      // element.current.style.left = `${newStartX}px`
+      // element.current.style.width = `${newWidth}px`
+      element.current.style.gridColumnStart = newStartX / (schedulingThreeshold / tickWidthPixels) + 1
+      element.current.style.gridColumnEnd = (newStartX + newWidth) / (schedulingThreeshold / tickWidthPixels) + 1
     }
     else {
       const diff = Math.round(
@@ -53,8 +55,10 @@ export function ResizeableEvent(props) {
       ) * (schedulingThreeshold / tickWidthPixels)
       const newStartX = Math.min(startX, startX + startWidth + diff)
       const newWidth = Math.max(startWidth + diff, -diff - startWidth)
-      element.current.style.left = `${newStartX}px`
-      element.current.style.width = `${newWidth}px`
+      // element.current.style.left = `${newStartX}px`
+      // element.current.style.width = `${newWidth}px`
+      element.current.style.gridColumnStart = newStartX / (schedulingThreeshold / tickWidthPixels) + 1
+      element.current.style.gridColumnEnd = (newStartX + newWidth) / (schedulingThreeshold / tickWidthPixels) + 1
     }
   }
 

@@ -30,6 +30,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     updateEvent,
     handleEventDrop,
     resourceColumnDefaultWidth = 300,
+    gridLayout = true,
   } = props
 
   const [startDate, endDate] = dateRange
@@ -254,6 +255,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                             key={event.id}
                             schedulingThreeshold={schedulingThreeshold}
                             updateEvent={updateEvent}
+                            gridLayout={gridLayout}
                           />
                         )
                       : null
@@ -274,6 +276,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                   resizeRow={resizeRow}
                   schedulingThreeshold={schedulingThreeshold}
                   handleEventDrop={handleEventDrop}
+                  gridLayout={gridLayout}
                 >
                   {list}
                 </TimeRangeRow>

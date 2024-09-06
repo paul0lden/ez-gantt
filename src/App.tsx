@@ -85,7 +85,7 @@ function Event(props) {
         sx={{
           'display': 'flex',
           'background': 'grey',
-          'height': 60,
+          'height': 40,
           ':hover': {
             outline: '2px aqua solid',
           },
@@ -107,19 +107,13 @@ function Event(props) {
 
 const MemoEvent = React.memo(Event)
 
-function Placeholder({ width, x, height, level }) {
-  console.log(level)
+function Placeholder() {
   return (
     <Box
       sx={{
-        height: `${height}px`,
-        transition: 'left .05s linear',
+        height: '100%',
         background: 'rgba(0, 0, 0, .25)',
         borderRadius: 2,
-        gridColumnStart: x + 1,
-        gridColumnEnd: x + width + 1,
-        gridRowStart: level,
-        gridRowEnd: level + 1,
       }}
     />
   )
