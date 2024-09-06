@@ -238,7 +238,7 @@ function TimeRangeRow<EventT, ResourceT>(
             }),
       }}
       ref={rowRef}
-      data-resource={resource.id}
+      data-timerange={resource.id}
     >
       {children}
       {placeholderPos && (
