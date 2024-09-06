@@ -19,6 +19,7 @@ export function ResizeableEvent(props) {
   const startWidth = (endDate - startDate) / tickWidthPixels
   const startX = Math.abs(dateRange[0] - startDate) / tickWidthPixels
   const element = useRef<Element | null>(null)
+  const gridLayout = useRef(false)
   const startPos = useRef({ x: 0, y: 0 })
 
   const pointerDownHandler = (e) => {
@@ -27,6 +28,12 @@ export function ResizeableEvent(props) {
     e.target.setPointerCapture(e.pointerId)
 
     element.current = document.querySelector(`[data-event-id="${id}"]`)
+    gridLayout.current
+      = (
+        document.querySelector(
+          `[data-timerange="${event.resource}"]`,
+        ) as HTMLElement
+      )?.style?.getPropertyValue('display') === 'grid'
     if (element.current) {
       const { x, y } = element.current.getBoundingClientRect()
       startPos.current = { x, y }
@@ -39,26 +46,44 @@ export function ResizeableEvent(props) {
 
     // if left update the start date
     if (pos === 'left') {
-      const diff = Math.round(
-        (e.clientX - startPos.current.x) / (schedulingThreeshold / tickWidthPixels),
-      ) * (schedulingThreeshold / tickWidthPixels)
+      const diff
+        = Math.round(
+          (e.clientX - startPos.current.x)
+          / (schedulingThreeshold / tickWidthPixels),
+        )
+        * (schedulingThreeshold / tickWidthPixels)
       const newStartX = Math.min(startX + diff, startX + startWidth)
       const newWidth = Math.max(startWidth - diff, diff - startWidth)
-      // element.current.style.left = `${newStartX}px`
-      // element.current.style.width = `${newWidth}px`
-      element.current.style.gridColumnStart = newStartX / (schedulingThreeshold / tickWidthPixels) + 1
-      element.current.style.gridColumnEnd = (newStartX + newWidth) / (schedulingThreeshold / tickWidthPixels) + 1
+      if (gridLayout.current) {
+        element.current.style.gridColumnStart
+          = newStartX / (schedulingThreeshold / tickWidthPixels) + 1
+        element.current.style.gridColumnEnd
+          = (newStartX + newWidth) / (schedulingThreeshold / tickWidthPixels) + 1
+      }
+      else {
+        element.current.style.left = `${newStartX}px`
+        element.current.style.width = `${newWidth}px`
+      }
     }
     else {
-      const diff = Math.round(
-        (e.clientX - (startPos.current.x + startWidth)) / (schedulingThreeshold / tickWidthPixels),
-      ) * (schedulingThreeshold / tickWidthPixels)
+      const diff
+        = Math.round(
+          (e.clientX - (startPos.current.x + startWidth))
+          / (schedulingThreeshold / tickWidthPixels),
+        )
+        * (schedulingThreeshold / tickWidthPixels)
       const newStartX = Math.min(startX, startX + startWidth + diff)
       const newWidth = Math.max(startWidth + diff, -diff - startWidth)
-      // element.current.style.left = `${newStartX}px`
-      // element.current.style.width = `${newWidth}px`
-      element.current.style.gridColumnStart = newStartX / (schedulingThreeshold / tickWidthPixels) + 1
-      element.current.style.gridColumnEnd = (newStartX + newWidth) / (schedulingThreeshold / tickWidthPixels) + 1
+      if (gridLayout.current) {
+        element.current.style.gridColumnStart
+          = newStartX / (schedulingThreeshold / tickWidthPixels) + 1
+        element.current.style.gridColumnEnd
+          = (newStartX + newWidth) / (schedulingThreeshold / tickWidthPixels) + 1
+      }
+      else {
+        element.current.style.left = `${newStartX}px`
+        element.current.style.width = `${newWidth}px`
+      }
     }
   }
 
@@ -71,21 +96,27 @@ export function ResizeableEvent(props) {
       return
 
     if (pos === 'left') {
-      const diff = Math.round(
-        (e.clientX - startPos.current.x) / (schedulingThreeshold / tickWidthPixels),
-      ) * (schedulingThreeshold / tickWidthPixels)
+      const diff
+        = Math.round(
+          (e.clientX - startPos.current.x)
+          / (schedulingThreeshold / tickWidthPixels),
+        )
+        * (schedulingThreeshold / tickWidthPixels)
       const newStartX = Math.min(startX + diff, startX + startWidth)
       const newWidth = Math.max(startWidth - diff, diff - startWidth)
 
-      const newStartDate = dateRange[0] + (newStartX * tickWidthPixels)
-      const newEndDate = (newWidth * tickWidthPixels) + newStartDate
+      const newStartDate = dateRange[0] + newStartX * tickWidthPixels
+      const newEndDate = newWidth * tickWidthPixels + newStartDate
 
       updateEvent({ ...event, startDate: newStartDate, endDate: newEndDate })
     }
     else {
-      const diff = Math.round(
-        (e.clientX - (startPos.current.x + startWidth)) / (schedulingThreeshold / tickWidthPixels),
-      ) * (schedulingThreeshold / tickWidthPixels)
+      const diff
+        = Math.round(
+          (e.clientX - (startPos.current.x + startWidth))
+          / (schedulingThreeshold / tickWidthPixels),
+        )
+        * (schedulingThreeshold / tickWidthPixels)
       const newStartX = Math.min(startX, startX + startWidth + diff)
       const newWidth = Math.max(startWidth + diff, -diff - startWidth)
 
