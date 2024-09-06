@@ -135,6 +135,9 @@ function TimeRangeRow<EventT, ResourceT>(
             const width = Number(type.split('+')?.[3])
             if (!width || Number.isNaN(width))
               return
+            const height = Number(type.split('+')?.[4])
+            if (!height || Number.isNaN(height))
+              return
 
             const data: { x?: number } = target.data
             if (!data.x)
@@ -143,6 +146,7 @@ function TimeRangeRow<EventT, ResourceT>(
             drawPlaceholder({
               rowRelativeX: input.clientX - diffX - data.x,
               width,
+              height,
             })
           }
         },
