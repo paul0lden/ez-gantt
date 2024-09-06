@@ -8,7 +8,9 @@ import type { TimeRangeProps } from './types'
 import { getEventType } from './defaults'
 import { checkLevel } from './utils/levels'
 
-function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT>) {
+function TimeRangeRow<EventT, ResourceT>(
+  props: TimeRangeProps<EventT, ResourceT>,
+) {
   const {
     Placeholder,
     placeholderProps = {},
@@ -21,6 +23,7 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
     schedulingThreeshold,
     eventsByLevel,
     children,
+    gridLayout,
   } = props
 
   // store temporary resize event to display the preview
@@ -54,12 +57,17 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
   }) => {
     const roundValue
       = Math.round(rowRelativeX / (schedulingThreeshold / tickWidthPixels))
+      * (gridLayout ? 1 : schedulingThreeshold / tickWidthPixels)
 
     const level = checkLevel(
       {
-        startDate: startDate + roundValue * tickWidthPixels,
+        startDate:
+          startDate
+          + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels),
         endDate:
-          startDate + roundValue * tickWidthPixels + width * tickWidthPixels,
+          startDate
+          + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels)
+          + width * tickWidthPixels,
       },
       eventsByLevel.map(subArray =>
         subArray.reduce(
@@ -70,11 +78,10 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
       tickWidthPixels,
     )
 
-    if (placeholderPos?.x !== roundValue
-    // || placeholderPos?.level !== level
-    ) {
+    if (placeholderPos?.x !== roundValue || placeholderPos?.level !== level) {
       setPlaceholderPos({
-        width: width / (schedulingThreeshold / tickWidthPixels),
+        width:
+          width / (gridLayout ? schedulingThreeshold / tickWidthPixels : 1),
         x: roundValue,
         height,
         level,
@@ -175,14 +182,10 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
           const start = startDate + roundValue * tickWidthPixels
           const end = start + width * tickWidthPixels
 
-          handleEventDrop(
-            source.data,
-            location.current.dropTargets[0].data,
-            {
-              startDate: start,
-              endDate: end,
-            },
-          )
+          handleEventDrop(source.data, location.current.dropTargets[0].data, {
+            startDate: start,
+            endDate: end,
+          })
           setPlaceholderPos(null)
         },
         onDrag({ location, source }) {
@@ -209,21 +212,58 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
 
   return (
     <div
-      ref={rowRef}
       className="timerange-row"
       style={{
-        gridTemplateColumns: `repeat(${
-          width / (schedulingThreeshold / tickWidthPixels)
-        }, ${
-          schedulingThreeshold / tickWidthPixels
-        }px)`,
         minHeight: `${eventHeight}px`,
+        display: gridLayout ? 'grid' : 'flex',
+        ...(gridLayout
+          ? {
+              gridTemplateColumns: `repeat(${
+                width / (schedulingThreeshold / tickWidthPixels)
+              }, ${schedulingThreeshold / tickWidthPixels}px)`,
+            }
+          : {
+              height: `${
+                Math.max(
+                  placeholderPos?.level ? placeholderPos.level + 1 : 0,
+                  eventsByLevel.length,
+                )
+                * eventHeight
+                + Math.max(
+                  placeholderPos?.level ? placeholderPos.level : 0,
+                  eventsByLevel.length - 1,
+                )
+                * 8
+              }px`,
+            }),
       }}
+      ref={rowRef}
       data-resource={resource.id}
     >
       {children}
       {placeholderPos && (
-        <Placeholder {...placeholderProps} {...placeholderPos} />
+        <div
+          style={
+            gridLayout
+              ? {
+                  gridColumnStart: placeholderPos.x + 1,
+                  gridColumnEnd: placeholderPos.x + placeholderPos.width + 1,
+                  gridRowStart: placeholderPos.level + 1,
+                  gridRowEnd: placeholderPos.level + 2,
+                  height: `${placeholderPos.height}px`,
+                }
+              : {
+                  position: 'absolute',
+                  top: `${placeholderPos.level * eventHeight + placeholderPos.level * 8 + 8}px`,
+                  height: `${eventHeight}px`,
+                  width: `${placeholderPos.width}px`,
+
+                  left: `${placeholderPos.x}px`,
+                }
+          }
+        >
+          <Placeholder {...placeholderProps} {...placeholderPos} />
+        </div>
       )}
     </div>
   )
