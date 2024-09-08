@@ -48,6 +48,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     selectionRect,
     startDate,
     msPerPixel,
+    selectedEvents,
     setSelectedEvents,
   })
 
