@@ -69,6 +69,7 @@
 }
 
 .select-rect {
+  pointer-events: none;
   opacity: 0;
   background: rgba(125, 125, 255, 0.2);
   box-sizing: content-box;

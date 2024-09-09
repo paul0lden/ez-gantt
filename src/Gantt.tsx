@@ -31,6 +31,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     handleEventDrop,
     resourceColumnDefaultWidth = 300,
     gridLayout = true,
+    dropResolutionMode = 'as-selected',
   } = props
 
   const [startDate, endDate] = dateRange
@@ -41,6 +42,22 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
   const ganttScrollContainer = useRef<HTMLDivElement>(null)
   const ganttHeaderScrollContainer = useRef<HTMLDivElement>(null)
   const resourceScrollContainer = useRef<HTMLDivElement>(null)
+  const selectedEventsRef = useRef<Array<GanttEvent<EventT>>>([])
+
+  const updateEventSelection = useCallback(
+    (selection: React.SetStateAction<string[]>) => {
+      selectedEventsRef.current
+        = typeof selection === 'function'
+          ? selection(selectedEventsRef.current.map(el => el.id))
+            .map(id => events.find(event => event.id === id) ?? [])
+            .flat()
+          : selection
+            .map(id => events.find(event => event.id === id) ?? [])
+            .flat()
+      setSelectedEvents(selection)
+    },
+    [],
+  )
 
   const ganttWidth = (endDate - startDate) / msPerPixel
   const { selectionRectEnd, selectionRectStart } = useSelectionUtils({
@@ -49,7 +66,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     startDate,
     msPerPixel,
     selectedEvents,
-    setSelectedEvents,
+    setSelectedEvents: updateEventSelection,
   })
 
   const handleEventClick = useCallback(
@@ -59,14 +76,14 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
       if (!id)
         return
       if (e.shiftKey) {
-        setSelectedEvents(prev =>
+        updateEventSelection(prev =>
           prev.includes(id)
             ? [...prev.splice(prev.indexOf(id), 1)]
             : [...prev, id],
         )
       }
       else {
-        setSelectedEvents([id])
+        updateEventSelection([id])
       }
     },
     [],
@@ -238,30 +255,35 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
               )
 
               const list = useMemo(
-                () => eventsByLevel.flatMap((level, i) =>
-                  level?.flatMap((event) => {
-                    return event
-                      ? (
-                          <GanttElementWrapper
-                            {...event}
-                            event={event}
-                            onClick={handleEventClick}
-                            EventSlot={Event}
-                            selected={resourceSelectionMap[resource.id]?.includes(event)}
-                            dateRange={dateRange}
-                            level={i}
-                            rowId={resource.id}
-                            eventHeight={45}
-                            tickWidthPixels={msPerPixel}
-                            key={event.id}
-                            schedulingThreeshold={schedulingThreeshold}
-                            updateEvent={updateEvent}
-                            gridLayout={gridLayout}
-                          />
-                        )
-                      : null
-                  }),
-                ),
+                () =>
+                  eventsByLevel.flatMap((level, i) =>
+                    level?.flatMap((event) => {
+                      return event
+                        ? (
+                            <GanttElementWrapper
+                              {...event}
+                              event={event}
+                              ganttRef={ganttScrollContainer}
+                              onClick={handleEventClick}
+                              EventSlot={Event}
+                              selected={resourceSelectionMap[resource.id]?.includes(
+                                event,
+                              )}
+                              dateRange={dateRange}
+                              level={i}
+                              rowId={resource.id}
+                              eventHeight={45}
+                              tickWidthPixels={msPerPixel}
+                              key={event.id}
+                              schedulingThreeshold={schedulingThreeshold}
+                              updateEvent={updateEvent}
+                              gridLayout={gridLayout}
+                              selectedEventsRef={selectedEventsRef}
+                            />
+                          )
+                        : null
+                    }),
+                  ),
                 [eventsByLevel, resourceSelectionMap[resource.id]],
               )
 

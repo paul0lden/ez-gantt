@@ -91,7 +91,6 @@ function Event(props) {
           },
           'outline': selected ? '2px red solid' : 'unset',
           'borderRadius': 2,
-          ...rest.sx,
         }}
       >
         <Box sx={{ overflow: 'hidden', marginInline: '16px' }}>
