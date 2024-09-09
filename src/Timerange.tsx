@@ -44,17 +44,18 @@ function TimeRangeRow<EventT, ResourceT>(
     }
   })
 
-  const drawPlaceholder = ({
-    rowRelativeX,
-    width,
-    id,
-    height,
-  }: {
+  const drawPlaceholder = (events: {
     rowRelativeX: number
     width: number
     id: string
     height: number
-  }) => {
+  }[]) => {
+    const data = {
+      rowRelativeX,
+      width,
+      id,
+      height,
+    }
     const roundValue
       = Math.round(rowRelativeX / (schedulingThreeshold / tickWidthPixels))
       * (gridLayout ? 1 : schedulingThreeshold / tickWidthPixels)
@@ -196,19 +197,25 @@ function TimeRangeRow<EventT, ResourceT>(
           const {
             current: { input, dropTargets },
           } = location
-          const { dragDiffX, width, id, height } = source.data
 
-          const target = dropTargets.find(el => el.data.location === 'row')
+          const drawData = []
+          for (
+            const { dragDiffX, width, id, height } of source.data.events
+          ) {
+            const target = dropTargets.find(el => el.data.location === 'row')
 
-          if (!dragDiffX || !width || !target)
-            return
+            if (!dragDiffX || !width || !target)
+              return
 
-          drawPlaceholder({
-            rowRelativeX: input.clientX - target.data.x - dragDiffX,
-            width,
-            id,
-            height,
-          })
+            drawData.push({
+              rowRelativeX: input.clientX - target.data.x - dragDiffX,
+              width,
+              id,
+              height,
+            })
+          }
+
+          drawPlaceholder(drawData)
         },
       }),
     )

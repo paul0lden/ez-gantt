@@ -52,6 +52,10 @@ interface GanttProps<EventT, ResourceT> {
     event: GanttEvent<EventT>,
     resource: GanttResource<ResourceT>
   ) => void
+  gridLayout: boolean
+  dropResolutionMode: 'as-selected' | 'single-resource'
+  updateEvent: () => any
+  resourceColumnDefaultWidth: number
 }
 
 interface TimeRangeProps<EventT, ResourceT> {
