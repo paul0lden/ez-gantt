@@ -19,6 +19,7 @@ function GanttElementWrapper(props: {
   const {
     onClick,
     event,
+    ganttRef,
     schedulingThreeshold,
     EventSlot,
     eventProps,
@@ -33,11 +34,11 @@ function GanttElementWrapper(props: {
     updateEvent,
     selected,
     gridLayout,
+    selectedEventsRef,
   } = props
 
-  const [dragging, setDragging] = useState(false)
-
   const ref = useRef<HTMLDivElement>(null)
+  const events = useRef<HTMLElement[]>([])
 
   useEffect(() => {
     const element = ref.current
@@ -48,17 +49,25 @@ function GanttElementWrapper(props: {
     return draggable({
       element,
       getInitialData: (e) => {
-        const dragDiffX = e.input.clientX - e.element.getBoundingClientRect().x
-        return {
-          startDate,
-          endDate,
-          id,
-          rowId,
-          width: e.element.getBoundingClientRect().width,
-          height: e.element.getBoundingClientRect().height,
-          dragDiffX,
-          type: getEventType(),
+        const out = []
+
+        for (const event of events.current) {
+          const id = event.getAttribute('data-event-id')
+          const data = selectedEventsRef.current.find(el => el.id === id)
+          const dragDiffX = e.input.clientX - event.getBoundingClientRect().x
+
+          out.push({
+            startDate: data.startDate,
+            endDate: data.endDate,
+            id,
+            rowId: data.resource,
+            width: event.getBoundingClientRect().width,
+            height: event.getBoundingClientRect().height,
+            dragDiffX,
+            type: getEventType(),
+          })
         }
+        return { events: out }
       },
       getInitialDataForExternal: (e) => {
         const dragDiffX = e.input.clientX - e.element.getBoundingClientRect().x
@@ -77,10 +86,23 @@ function GanttElementWrapper(props: {
         }
       },
       onDragStart() {
-        setDragging(true)
+        const out = []
+        for (const { id } of selectedEventsRef.current) {
+          const event = ganttRef.current.querySelector(
+            `[data-event-id="${id}"]`,
+          ) as HTMLElement
+          if (!event)
+            continue
+          out.push(event)
+          event.style.setProperty('display', 'none')
+        }
+        events.current = out
       },
       onDrop() {
-        setDragging(false)
+        for (const event of events.current) {
+          event.style.setProperty('display', 'unset')
+        }
+        events.current = []
       },
       onGenerateDragPreview: ({ source, location, nativeSetDragImage }) => {
         setCustomNativeDragPreview({
@@ -94,19 +116,33 @@ function GanttElementWrapper(props: {
             root.render(
               <div
                 style={{
-                  height: `${element.getBoundingClientRect().height}px`,
-                  width: `${element.getBoundingClientRect().width}px`,
+                  height: `auto`,
+                  width: `auto`,
+                  position: 'relative',
                 }}
               >
-                <EventSlot
-                  startDate={startDate}
-                  endDate={endDate}
-                  dateRange={dateRange}
-                  level={level}
-                  id={id}
-                  eventHeight={eventHeight}
-                  tickWidthPixels={tickWidthPixels}
-                />
+                {selectedEventsRef.current.map((el, i) => (
+                  <div
+                    style={{
+                      marginTop: `-15px`,
+                      marginLeft: `${i * 6}px`,
+                      width: `${(el.endDate - el.startDate) / tickWidthPixels}px`,
+                    }}
+                    key={el.id}
+                  >
+                    <EventSlot
+                      style={{
+                        boxShadow: '0px 0px 20px black',
+                      }}
+                      startDate={el.startDate}
+                      endDate={el.endDate}
+                      dateRange={dateRange}
+                      id={id}
+                      eventHeight={eventHeight}
+                      tickWidthPixels={tickWidthPixels}
+                    />
+                  </div>
+                ))}
               </div>,
             )
             return () => root.unmount()
@@ -115,9 +151,6 @@ function GanttElementWrapper(props: {
       },
     })
   }, [endDate, startDate, tickWidthPixels])
-
-  if (dragging)
-    return null
 
   return (
     <div
