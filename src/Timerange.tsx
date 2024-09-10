@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { Box } from '@mui/material'
 import { dropTargetForExternal } from '@atlaskit/pragmatic-drag-and-drop/external/adapter'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
@@ -6,7 +6,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import GanttElementWrapper from './Event'
 import type { TimeRangeProps } from './types'
 import { getEventType } from './defaults'
-import { checkLevel } from './utils/levels'
+import { checkLevel, getEventsByLevel } from './utils/levels'
 
 function TimeRangeRow<EventT, ResourceT>(
   props: TimeRangeProps<EventT, ResourceT>,
@@ -21,19 +21,26 @@ function TimeRangeRow<EventT, ResourceT>(
     resizeRow,
     width,
     schedulingThreeshold,
-    eventsByLevel,
     children,
     gridLayout,
+    events,
   } = props
 
   // store temporary resize event to display the preview
   // before submiting final ressult to the client
-  const [placeholderPos, setPlaceholderPos] = useState<{
-    width: number
-    x: number
-    height: number
-    level: number
-  } | null>(null)
+  const [placeholderPos, setPlaceholderPos] = useState<
+    {
+      width: number
+      x: number
+      height: number
+      level: number
+    }[]
+  >([])
+
+  const eventsByLevel = useMemo(
+    () => getEventsByLevel(events ?? []),
+    [events],
+  )
 
   const rowRef = useRef<HTMLDivElement>(null)
 
@@ -44,43 +51,55 @@ function TimeRangeRow<EventT, ResourceT>(
     }
   })
 
-  const drawPlaceholder = (events: {
-    rowRelativeX: number
-    width: number
-    id: string
-    height: number
-  }[]) => {
-    const data = {
-      rowRelativeX,
-      width,
-      id,
-      height,
-    }
-    const roundValue
-      = Math.round(rowRelativeX / (schedulingThreeshold / tickWidthPixels))
-      * (gridLayout ? 1 : schedulingThreeshold / tickWidthPixels)
+  const drawPlaceholder = (
+    events: {
+      rowRelativeX: number
+      width: number
+      id: string
+      height: number
+    }[],
+  ) => {
+    const out = []
 
-    const level = checkLevel(
-      {
-        startDate:
-          startDate
-          + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels),
+    const timeRangeEvents = getEventsByLevel([
+      ...eventsByLevel
+        .flat()
+        .filter(el => !events.map(ev => ev.id).includes(el.id)),
+      ...events.map(el => ({
+        startDate: startDate + el.rowRelativeX * tickWidthPixels,
         endDate:
           startDate
-          + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels)
-          + width * tickWidthPixels,
-      },
-      eventsByLevel.map(subArray =>
-        subArray.reduce(
-          (acc, el) => [...acc, el.id === id ? [] : el].flat(),
-          [],
-        ),
-      ),
-      tickWidthPixels,
-    )
+          + el.rowRelativeX * tickWidthPixels
+          + el.width * tickWidthPixels,
+        id: el.id,
+      })),
+    ])
 
-    if (placeholderPos?.x !== roundValue || placeholderPos?.level !== level) {
-      setPlaceholderPos({
+    console.log(timeRangeEvents)
+
+    for (const { rowRelativeX, width, id, height } of events) {
+      const roundValue
+        = Math.round(rowRelativeX / (schedulingThreeshold / tickWidthPixels))
+        * (gridLayout ? 1 : schedulingThreeshold / tickWidthPixels)
+
+      const level = checkLevel(
+        {
+          id,
+          startDate:
+            startDate
+            + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels),
+          endDate:
+            startDate
+            + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels)
+            + width * tickWidthPixels,
+        },
+        timeRangeEvents,
+        tickWidthPixels,
+      )
+      console.log(level)
+
+      out.push({
+        id,
         width:
           width / (gridLayout ? schedulingThreeshold / tickWidthPixels : 1),
         x: roundValue,
@@ -88,6 +107,8 @@ function TimeRangeRow<EventT, ResourceT>(
         level,
       })
     }
+
+    setPlaceholderPos(out)
   }
 
   useEffect(() => {
@@ -119,7 +140,7 @@ function TimeRangeRow<EventT, ResourceT>(
         canDrop: ({ source }) =>
           !!source.types.find(el => el.includes(getEventType())),
         onDragLeave() {
-          setPlaceholderPos(null)
+          setPlaceholderPos([])
         },
         onDrag({ location, source }) {
           const {
@@ -152,7 +173,7 @@ function TimeRangeRow<EventT, ResourceT>(
           }
         },
         onDrop({ source, location }) {
-          setPlaceholderPos(null)
+          setPlaceholderPos([])
         },
       }),
       dropTargetForElements({
@@ -165,33 +186,35 @@ function TimeRangeRow<EventT, ResourceT>(
           }
         },
         onDragLeave() {
-          setPlaceholderPos(null)
+          setPlaceholderPos([])
         },
         onDrop({ source, location }) {
           const {
             current: { input, dropTargets },
           } = location
-          const { dragDiffX, width, id } = source.data
+          const events = source.data.events
           const target = dropTargets.find(el => el.data.location === 'row')
+          // console.log(events)
 
-          if (!dragDiffX || !width || !target)
-            return
+          // if (!dragDiffX || !width || !target)
+          //  return
+          //
+          // const roundValue
+          //  = Math.round(
+          //    (input.clientX - target.data.x - dragDiffX)
+          //    / (schedulingThreeshold / tickWidthPixels),
+          //  )
+          //  * (schedulingThreeshold / tickWidthPixels)
+          //
+          // const start = startDate + roundValue * tickWidthPixels
+          // const end = start + width * tickWidthPixels
+          //
+          // handleEventDrop(source.data, location.current.dropTargets[0].data, {
+          //  startDate: start,
+          //  endDate: end,
+          // })
 
-          const roundValue
-            = Math.round(
-              (input.clientX - target.data.x - dragDiffX)
-              / (schedulingThreeshold / tickWidthPixels),
-            )
-            * (schedulingThreeshold / tickWidthPixels)
-
-          const start = startDate + roundValue * tickWidthPixels
-          const end = start + width * tickWidthPixels
-
-          handleEventDrop(source.data, location.current.dropTargets[0].data, {
-            startDate: start,
-            endDate: end,
-          })
-          setPlaceholderPos(null)
+          setPlaceholderPos([])
         },
         onDrag({ location, source }) {
           const {
@@ -199,9 +222,7 @@ function TimeRangeRow<EventT, ResourceT>(
           } = location
 
           const drawData = []
-          for (
-            const { dragDiffX, width, id, height } of source.data.events
-          ) {
+          for (const { dragDiffX, width, id, height } of source.data.events) {
             const target = dropTargets.find(el => el.data.location === 'row')
 
             if (!dragDiffX || !width || !target)
@@ -251,31 +272,32 @@ function TimeRangeRow<EventT, ResourceT>(
       ref={rowRef}
       data-timerange={resource.id}
     >
-      {children}
-      {placeholderPos && (
+      {children(eventsByLevel)}
+      {placeholderPos.map(el => (
         <div
+          key={el.id}
           style={
             gridLayout
               ? {
-                  gridColumnStart: placeholderPos.x + 1,
-                  gridColumnEnd: placeholderPos.x + placeholderPos.width + 1,
-                  gridRowStart: placeholderPos.level + 1,
-                  gridRowEnd: placeholderPos.level + 2,
-                  height: `${placeholderPos.height}px`,
+                  gridColumnStart: el.x + 1,
+                  gridColumnEnd: el.x + el.width + 1,
+                  gridRowStart: el.level + 1,
+                  gridRowEnd: el.level + 2,
+                  height: `${el.height}px`,
                 }
               : {
                   position: 'absolute',
-                  top: `${placeholderPos.level * eventHeight + placeholderPos.level * 8 + 8}px`,
+                  top: `${el.level * eventHeight + el.level * 8 + 8}px`,
                   height: `${eventHeight}px`,
-                  width: `${placeholderPos.width}px`,
+                  width: `${el.width}px`,
 
-                  left: `${placeholderPos.x}px`,
+                  left: `${el.x}px`,
                 }
           }
         >
-          <Placeholder {...placeholderProps} {...placeholderPos} />
+          <Placeholder {...placeholderProps} {...el} />
         </div>
-      )}
+      ))}
     </div>
   )
 }
