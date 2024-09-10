@@ -236,6 +236,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
         <div className="splitter" />
         <div
           ref={ganttScrollContainer}
+          data-testid="gantt"
           data-role="gantt"
           className="gantt"
           onPointerDown={selectionRectStart}
@@ -249,13 +250,8 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
             }}
           >
             {resources.map((resource) => {
-              const eventsByLevel = useMemo(
-                () => getEventsByLevel(resourceEventsMap[resource.id] ?? []),
-                [resourceEventsMap],
-              )
-
-              const list = useMemo(
-                () =>
+              const list = useCallback(
+                eventsByLevel =>
                   eventsByLevel.flatMap((level, i) =>
                     level?.flatMap((event) => {
                       return event
@@ -284,7 +280,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                         : null
                     }),
                   ),
-                [eventsByLevel, resourceSelectionMap[resource.id]],
+                [resourceSelectionMap[resource.id]],
               )
 
               return (
@@ -292,7 +288,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                   Placeholder={Placeholder}
                   dateRange={dateRange}
                   resource={resource}
-                  eventsByLevel={eventsByLevel}
+                  events={resourceEventsMap[resource.id]}
                   tickWidthPixels={msPerPixel}
                   width={ganttWidth}
                   key={resource.id}

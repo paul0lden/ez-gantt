@@ -51,7 +51,17 @@ function GanttElementWrapper(props: {
       getInitialData: (e) => {
         const out = []
 
-        for (const event of events.current) {
+        const events = []
+        for (const { id } of selectedEventsRef.current) {
+          const event = ganttRef.current.querySelector(
+            `[data-event-id="${id}"]`,
+          ) as HTMLElement
+          if (!event)
+            continue
+          events.push(event)
+        }
+
+        for (const event of events) {
           const id = event.getAttribute('data-event-id')
           const data = selectedEventsRef.current.find(el => el.id === id)
           const dragDiffX = e.input.clientX - event.getBoundingClientRect().x
@@ -67,6 +77,7 @@ function GanttElementWrapper(props: {
             type: getEventType(),
           })
         }
+        console.log(out)
         return { events: out }
       },
       getInitialDataForExternal: (e) => {
@@ -93,8 +104,8 @@ function GanttElementWrapper(props: {
           ) as HTMLElement
           if (!event)
             continue
-          out.push(event)
           event.style.setProperty('display', 'none')
+          out.push(event)
         }
         events.current = out
       },
