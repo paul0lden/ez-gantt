@@ -1,46 +1,34 @@
-# Getting Started with Create React App
+# ez-gantt ⏰📊
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Welcome to **ez-gantt** – the **simplest** and **fastest** way to integrate Gantt charts into your React projects! 🚀✨ 
+**ez-gantt** is designed to be **performance-focused** and **ultra-flexible**, making it easy to build interactive and customizable Gantt charts with almost **zero dependencies** ✨.
 
-## Available Scripts
+> **Project Status**: 🚧 Currently a work-in-progress toward **v1.0**! 🚧
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## ✨ Why ez-gantt?
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+**Near Zero Dependency**: We love keeping things lightweight and smooth! **ez-gantt** is built with the goal of using as few dependencies as possible to give you ultimate flexibility without the bloat! 💫
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+**Blazing Performance**: Whether you’re dealing with small projects or handling giant ones, **ez-gantt** is optimized for speed and efficiency, so you never have to worry about slow renders! 🏎️💨
 
-### `npm test`
+**Fully Customizable**: Want to tweak it your way? You got it! From styles to behaviors, **ez-gantt** offers endless customization options so you can shape it to your project’s needs~ 🌸
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 🚧 What’s Next?
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+🔧 **Work in Progress**: We're still actively working on the API and adding the finishing touches to make **v1.0** the best version it can be! Stay tuned, more exciting updates are coming soon! 🛠️👷
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 👾 Contributing
 
-### `npm run eject`
+Interested in helping make **ez-gantt** even better? Feel free to contribute! Pull requests, issues, and feedback are always welcome~! ❤️
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+---
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## License
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+**ez-gantt** is open-source and available under the [MIT License](./LICENSE). Free to use and contribute~ 🎉
