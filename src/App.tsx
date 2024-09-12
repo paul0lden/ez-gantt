@@ -110,7 +110,7 @@ function Placeholder() {
   return (
     <Box
       sx={{
-        height: '100%',
+        height: '40px',
         background: 'rgba(0, 0, 0, .25)',
         borderRadius: 2,
       }}
@@ -123,23 +123,13 @@ const MemoPlaceholder = React.memo(Placeholder)
 function App() {
   const [events, setEvents] = useState(getEvents())
 
-  const handleEventDrop = useCallback((event, resource, dropArea) => {
+  const handleEventDrop = useCallback((events) => {
+    console.log(events)
     setEvents((prev) => {
-      let updated = false
-      const base = prev.reduce((acc, el) => {
-        if (el.id === event.id) {
-          if (resource.id === el.resource) {
-            updated = true
-            return [...acc, { ...event, ...dropArea, resource: resource.id }]
-          }
-          return [...acc]
-        }
-        return [...acc, el]
-      }, [])
       return [
-        base,
-        updated ? [] : { ...event, ...dropArea, resource: resource.id },
-      ].flat()
+        ...prev.filter(el => !events.find(event => event.id === el.id)),
+        ...events,
+      ]
     })
   }, [])
 

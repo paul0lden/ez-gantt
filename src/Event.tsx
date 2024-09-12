@@ -1,10 +1,12 @@
-import type { ReactEventHandler } from 'react'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
+import { createRoot } from 'react-dom/client'
 
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
 import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
-import { createRoot } from 'react-dom/client'
+
+import type { ReactEventHandler } from 'react'
+
 import { getEventType } from './defaults'
 
 /**
@@ -30,11 +32,15 @@ function GanttElementWrapper(props: {
     eventHeight,
     tickWidthPixels,
     id,
+    placeholder,
     rowId,
     updateEvent,
     selected,
     gridLayout,
     selectedEventsRef,
+    getDragPreview,
+    setDragging,
+    draggedElements,
   } = props
 
   const ref = useRef<HTMLDivElement>(null)
@@ -77,7 +83,6 @@ function GanttElementWrapper(props: {
             type: getEventType(),
           })
         }
-        console.log(out)
         return { events: out }
       },
       getInitialDataForExternal: (e) => {
@@ -97,25 +102,25 @@ function GanttElementWrapper(props: {
         }
       },
       onDragStart() {
+        setDragging(true)
         const out = []
+        const dragged = []
         for (const { id } of selectedEventsRef.current) {
           const event = ganttRef.current.querySelector(
             `[data-event-id="${id}"]`,
           ) as HTMLElement
           if (!event)
             continue
-          event.style.setProperty('display', 'none')
           out.push(event)
+          dragged.push(id)
         }
+        draggedElements.current = dragged
         events.current = out
       },
       onDrop() {
-        for (const event of events.current) {
-          event.style.setProperty('display', 'unset')
-        }
         events.current = []
       },
-      onGenerateDragPreview: ({ source, location, nativeSetDragImage }) => {
+      onGenerateDragPreview: ({ location, nativeSetDragImage }) => {
         setCustomNativeDragPreview({
           nativeSetDragImage,
           getOffset: preserveOffsetOnSource({
@@ -124,37 +129,44 @@ function GanttElementWrapper(props: {
           }),
           render({ container }) {
             const root = createRoot(container)
-            root.render(
-              <div
-                style={{
-                  height: `auto`,
-                  width: `auto`,
-                  position: 'relative',
-                }}
-              >
-                {selectedEventsRef.current.map((el, i) => (
+            root.render(getDragPreview
+              ? (
                   <div
                     style={{
-                      marginTop: `-15px`,
-                      marginLeft: `${i * 6}px`,
-                      width: `${(el.endDate - el.startDate) / tickWidthPixels}px`,
+                      height: `auto`,
+                      width: `auto`,
+                      position: 'relative',
                     }}
-                    key={el.id}
                   >
-                    <EventSlot
-                      style={{
-                        boxShadow: '0px 0px 20px black',
-                      }}
-                      startDate={el.startDate}
-                      endDate={el.endDate}
-                      dateRange={dateRange}
-                      id={id}
-                      eventHeight={eventHeight}
-                      tickWidthPixels={tickWidthPixels}
-                    />
+                    {getDragPreview({
+                      events: selectedEventsRef.current,
+                      EventSlot,
+                    })
+                    //  map((el, i) => (
+                    //  <div
+                    //    style={{
+                    //      marginTop: `-15px`,
+                    //      marginLeft: `${i * 6}px`,
+                    //      width: `${(el.endDate - el.startDate) / tickWidthPixels}px`,
+                    //    }}
+                    //    key={el.id}
+                    //  >
+                    //    <EventSlot
+                    //      style={{
+                    //        boxShadow: '0px 0px 20px black',
+                    //      }}
+                    //      startDate={el.startDate}
+                    //      endDate={el.endDate}
+                    //      dateRange={dateRange}
+                    //      id={id}
+                    //      eventHeight={eventHeight}
+                    //      tickWidthPixels={tickWidthPixels}
+                    //    />
+                    //  </div>
+                    // ))
+                    }
                   </div>
-                ))}
-              </div>,
+                ) : <div>&nbsp;</div>,
             )
             return () => root.unmount()
           },
@@ -165,18 +177,19 @@ function GanttElementWrapper(props: {
 
   return (
     <div
-      data-role="gantt-event"
-      data-event-id={id}
+      data-role={placeholder ? 'gantt-event-placeholder' : 'gantt-event'}
+      data-event-id={placeholder ? undefined : id}
+      data-event-placeholder-id={placeholder ? id : undefined}
       className="gantt-event"
       ref={ref}
-      onClick={onClick}
+      onPointerDown={selected ? () => {} : onClick}
       style={{
         height: gridLayout ? 'fit-content' : '100%',
         position: gridLayout ? 'relative' : 'absolute',
         ...(gridLayout
           ? {
               gridColumnStart:
-                (startDate - dateRange[0]) / schedulingThreeshold + 1,
+                Math.max((startDate - dateRange[0]) / schedulingThreeshold + 1, 1),
               gridColumnEnd:
                 (endDate - dateRange[0]) / schedulingThreeshold + 1,
               gridRowStart: level + 1,
