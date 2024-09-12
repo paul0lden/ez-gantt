@@ -3,16 +3,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
 import { autoScrollForExternal } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/external'
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
+import { monitorForExternal } from '@atlaskit/pragmatic-drag-and-drop/external/adapter'
+import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 
-import type { GanttEvent, GanttProps } from './types'
-import TimeRangeRow from './Timerange'
-import GanttElementWrapper from './Event'
 import { generateBackground, levelToDates } from './utils/background'
 import { useSelectionUtils } from './utils/selection'
 import { syncScroll } from './utils/scrollSync'
+import TimeRangeRow from './Timerange'
+import GanttElementWrapper from './Event'
+
+import type { GanttEvent, GanttProps } from './types'
 
 import './gantt.css'
-import { getEventsByLevel } from './utils/levels'
 
 /**
  * Data driven gantt chart
@@ -37,12 +39,14 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
   const [startDate, endDate] = dateRange
 
   const [selectedEvents, setSelectedEvents] = useState<string[]>([])
+  const [isDragging, setDragging] = useState(false)
 
   const selectionRect = useRef<HTMLDivElement>(null)
   const ganttScrollContainer = useRef<HTMLDivElement>(null)
   const ganttHeaderScrollContainer = useRef<HTMLDivElement>(null)
   const resourceScrollContainer = useRef<HTMLDivElement>(null)
   const selectedEventsRef = useRef<Array<GanttEvent<EventT>>>([])
+  const draggedElements = useRef<any[]>([])
 
   const updateEventSelection = useCallback(
     (selection: React.SetStateAction<string[]>) => {
@@ -176,6 +180,18 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           element,
           getConfiguration: () => ({ maxScrollSpeed: 'fast' }),
         }),
+        monitorForExternal({
+          onDrop: () => {
+            setDragging(false)
+            draggedElements.current = []
+          },
+        }),
+        monitorForElements({
+          onDrop: () => {
+            setDragging(false)
+            draggedElements.current = []
+          },
+        }),
       )
       resourceCleanUp()
       dateRangeCleanup()
@@ -251,9 +267,9 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           >
             {resources.map((resource) => {
               const list = useCallback(
-                eventsByLevel =>
-                  eventsByLevel.flatMap((level, i) =>
-                    level?.flatMap((event) => {
+                (eventsByLevel) => {
+                  return eventsByLevel.map((level, i) =>
+                    level.map((event) => {
                       return event
                         ? (
                             <GanttElementWrapper
@@ -261,26 +277,29 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                               event={event}
                               ganttRef={ganttScrollContainer}
                               onClick={handleEventClick}
-                              EventSlot={Event}
+                              EventSlot={event.placeholder ? Placeholder : Event}
                               selected={resourceSelectionMap[resource.id]?.includes(
                                 event,
                               )}
+                              setDragging={setDragging}
                               dateRange={dateRange}
                               level={i}
                               rowId={resource.id}
                               eventHeight={45}
                               tickWidthPixels={msPerPixel}
-                              key={event.id}
+                              key={event.placeholder ? `${event.id}-placeholder` : event.id}
                               schedulingThreeshold={schedulingThreeshold}
                               updateEvent={updateEvent}
                               gridLayout={gridLayout}
                               selectedEventsRef={selectedEventsRef}
+                              draggedElements={draggedElements}
                             />
                           )
                         : null
                     }),
-                  ),
-                [resourceSelectionMap[resource.id]],
+                  )
+                },
+                [resourceSelectionMap[resource.id], isDragging],
               )
 
               return (
@@ -296,6 +315,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                   schedulingThreeshold={schedulingThreeshold}
                   handleEventDrop={handleEventDrop}
                   gridLayout={gridLayout}
+                  draggedElements={draggedElements}
                 >
                   {list}
                 </TimeRangeRow>

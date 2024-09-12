@@ -1,45 +1,53 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
-import { Box } from '@mui/material'
+
 import { dropTargetForExternal } from '@atlaskit/pragmatic-drag-and-drop/external/adapter'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
-import GanttElementWrapper from './Event'
-import type { TimeRangeProps } from './types'
+
 import { getEventType } from './defaults'
-import { checkLevel, getEventsByLevel } from './utils/levels'
+import { getEventsByLevel } from './utils/levels'
+
+import type { TimeRangeProps } from './types'
+import { debounce, debounceRAF } from './utils/debounce'
 
 function TimeRangeRow<EventT, ResourceT>(
   props: TimeRangeProps<EventT, ResourceT>,
 ) {
   const {
-    Placeholder,
-    placeholderProps = {},
     resource,
     dateRange: [startDate],
     tickWidthPixels,
-    handleEventDrop,
     resizeRow,
     width,
     schedulingThreeshold,
     children,
     gridLayout,
     events,
+    handleEventDrop,
+    draggedElements,
   } = props
 
   // store temporary resize event to display the preview
   // before submiting final ressult to the client
   const [placeholderPos, setPlaceholderPos] = useState<
-    {
-      width: number
-      x: number
+    Array<{
+      id: string
+      startDate: number
+      endDate: number
       height: number
-      level: number
-    }[]
+      placeholder: boolean
+    }>
   >([])
 
   const eventsByLevel = useMemo(
-    () => getEventsByLevel(events ?? []),
-    [events],
+    () =>
+      getEventsByLevel([
+        ...(events ?? []).filter(
+          el => !draggedElements.current.includes(el.id),
+        ),
+        ...placeholderPos,
+      ]),
+    [events, placeholderPos],
   )
 
   const rowRef = useRef<HTMLDivElement>(null)
@@ -61,50 +69,22 @@ function TimeRangeRow<EventT, ResourceT>(
   ) => {
     const out = []
 
-    const timeRangeEvents = getEventsByLevel([
-      ...eventsByLevel
-        .flat()
-        .filter(el => !events.map(ev => ev.id).includes(el.id)),
-      ...events.map(el => ({
-        startDate: startDate + el.rowRelativeX * tickWidthPixels,
-        endDate:
-          startDate
-          + el.rowRelativeX * tickWidthPixels
-          + el.width * tickWidthPixels,
-        id: el.id,
-      })),
-    ])
-
-    console.log(timeRangeEvents)
-
     for (const { rowRelativeX, width, id, height } of events) {
       const roundValue
         = Math.round(rowRelativeX / (schedulingThreeshold / tickWidthPixels))
         * (gridLayout ? 1 : schedulingThreeshold / tickWidthPixels)
 
-      const level = checkLevel(
-        {
-          id,
-          startDate:
-            startDate
-            + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels),
-          endDate:
-            startDate
-            + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels)
-            + width * tickWidthPixels,
-        },
-        timeRangeEvents,
-        tickWidthPixels,
-      )
-      console.log(level)
-
       out.push({
         id,
-        width:
-          width / (gridLayout ? schedulingThreeshold / tickWidthPixels : 1),
-        x: roundValue,
+        startDate:
+          startDate
+          + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels),
+        endDate:
+          startDate
+          + roundValue * (gridLayout ? schedulingThreeshold : tickWidthPixels)
+          + width * tickWidthPixels,
         height,
-        level,
+        placeholder: true,
       })
     }
 
@@ -139,10 +119,10 @@ function TimeRangeRow<EventT, ResourceT>(
         },
         canDrop: ({ source }) =>
           !!source.types.find(el => el.includes(getEventType())),
-        onDragLeave() {
+        onDragLeave: debounceRAF(() => {
           setPlaceholderPos([])
-        },
-        onDrag({ location, source }) {
+        }),
+        onDrag: debounce(({ location, source }) => {
           const {
             current: { input, dropTargets },
           } = location
@@ -171,10 +151,10 @@ function TimeRangeRow<EventT, ResourceT>(
               height,
             })
           }
-        },
-        onDrop({ source, location }) {
+        }, 100),
+        onDrop: debounceRAF(() => {
           setPlaceholderPos([])
-        },
+        }),
       }),
       dropTargetForElements({
         element,
@@ -185,38 +165,47 @@ function TimeRangeRow<EventT, ResourceT>(
             ...resource,
           }
         },
-        onDragLeave() {
+        onDragLeave: debounce(() => {
           setPlaceholderPos([])
-        },
-        onDrop({ source, location }) {
+        }, 50),
+        onDrop: debounce(({ source, location }) => {
           const {
-            current: { input, dropTargets },
+            current: { dropTargets, input },
           } = location
           const events = source.data.events
-          const target = dropTargets.find(el => el.data.location === 'row')
-          // console.log(events)
 
-          // if (!dragDiffX || !width || !target)
-          //  return
-          //
-          // const roundValue
-          //  = Math.round(
-          //    (input.clientX - target.data.x - dragDiffX)
-          //    / (schedulingThreeshold / tickWidthPixels),
-          //  )
-          //  * (schedulingThreeshold / tickWidthPixels)
-          //
-          // const start = startDate + roundValue * tickWidthPixels
-          // const end = start + width * tickWidthPixels
-          //
-          // handleEventDrop(source.data, location.current.dropTargets[0].data, {
-          //  startDate: start,
-          //  endDate: end,
-          // })
+          const updatedEvents = []
+          for (const { dragDiffX, width, ...event } of events) {
+            const target = dropTargets.find(el => el.data.location === 'row')
 
+            if (!dragDiffX || !width || !target)
+              return
+
+            const roundValue
+              = Math.round(
+                (input.clientX - target.data.x - dragDiffX)
+                / (schedulingThreeshold / tickWidthPixels),
+              ) * (gridLayout ? 1 : schedulingThreeshold / tickWidthPixels)
+
+            updatedEvents.push({
+              ...event,
+              startDate:
+                startDate
+                + roundValue
+                * (gridLayout ? schedulingThreeshold : tickWidthPixels),
+              endDate:
+                startDate
+                + roundValue
+                * (gridLayout ? schedulingThreeshold : tickWidthPixels)
+                + width * tickWidthPixels,
+              resource: target.data.id,
+            })
+          }
+
+          handleEventDrop(updatedEvents)
           setPlaceholderPos([])
-        },
-        onDrag({ location, source }) {
+        }, 50),
+        onDrag: debounce(({ location, source }) => {
           const {
             current: { input, dropTargets },
           } = location
@@ -237,7 +226,7 @@ function TimeRangeRow<EventT, ResourceT>(
           }
 
           drawPlaceholder(drawData)
-        },
+        }, 50),
       }),
     )
   }, [placeholderPos, tickWidthPixels, startDate])
@@ -273,31 +262,6 @@ function TimeRangeRow<EventT, ResourceT>(
       data-timerange={resource.id}
     >
       {children(eventsByLevel)}
-      {placeholderPos.map(el => (
-        <div
-          key={el.id}
-          style={
-            gridLayout
-              ? {
-                  gridColumnStart: el.x + 1,
-                  gridColumnEnd: el.x + el.width + 1,
-                  gridRowStart: el.level + 1,
-                  gridRowEnd: el.level + 2,
-                  height: `${el.height}px`,
-                }
-              : {
-                  position: 'absolute',
-                  top: `${el.level * eventHeight + el.level * 8 + 8}px`,
-                  height: `${eventHeight}px`,
-                  width: `${el.width}px`,
-
-                  left: `${el.x}px`,
-                }
-          }
-        >
-          <Placeholder {...placeholderProps} {...el} />
-        </div>
-      ))}
     </div>
   )
 }
