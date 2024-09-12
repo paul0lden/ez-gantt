@@ -16,12 +16,9 @@ export function checkLevel(
     }
     let hasSpace = true
     for (const event of eventsByLevel[level]) {
-      if (event.id === entry.id) {
-        return level
-      }
       if (
-        !(event.endDate < entry.startDate
-        || event.startDate > entry.endDate)
+        (event.startDate < entry.endDate
+        && entry.startDate < event.endDate)
       ) {
         hasSpace = false
       }

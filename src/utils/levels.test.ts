@@ -9,7 +9,7 @@ interface Event {
 }
 
 describe('checkLevel', () => {
-  it('should return level 0 when no events overlap', () => {
+  it('no events overlap', () => {
     const entry: Event = { startDate: 100, endDate: 200, id: '0' }
     const events: Event[] = []
 
@@ -18,7 +18,7 @@ describe('checkLevel', () => {
     expect(level).toBe(0)
   })
 
-  it('should return level 1 when one event overlaps on level 0', () => {
+  it('one event overlaps', () => {
     const entry: Event = { startDate: 100, endDate: 200, id: '1' }
     const events: Event[] = [
       { startDate: 50, endDate: 150, id: '0' },
@@ -26,10 +26,10 @@ describe('checkLevel', () => {
 
     const level = checkLevel(entry, getEventsByLevel(events))
 
-    expect(level).toBe(1) // Since the entry overlaps with the event at level 0
+    expect(level).toBe(1)
   })
 
-  it('should return level 0 when no overlapping events are present', () => {
+  it('no overlapping events', () => {
     const entry: Event = { startDate: 300, endDate: 400, id: '2' }
     const events: Event[] = [
       { startDate: 100, endDate: 200, id: '0' },
@@ -38,10 +38,10 @@ describe('checkLevel', () => {
 
     const level = checkLevel(entry, getEventsByLevel(events))
 
-    expect(level).toBe(0) // No overlap with existing events
+    expect(level).toBe(0)
   })
 
-  it('should return the correct level when multiple events overlap', () => {
+  it('multiple events overlap', () => {
     const entry: Event = { startDate: 150, endDate: 250, id: '3' }
     const events: Event[] = [
       { startDate: 50, endDate: 150, id: '0' }, // Level 0
@@ -51,6 +51,18 @@ describe('checkLevel', () => {
 
     const level = checkLevel(entry, getEventsByLevel(events))
 
-    expect(level).toBe(2) // Level 0 and 1 are occupied
+    expect(level).toBe(2)
   })
+
+  // it('one event inside another', () => {
+  //  const entry: Event = { startDate: 150, endDate: 250, id: '1' }
+  //  const events: Event[] = [
+  //    { startDate: 50, endDate: 400, id: '0' }, // Level 0
+  //    { startDate: 200, endDate: 220, id: '2' }, // Level 2
+  //  ]
+  //
+  //  const level = checkLevel(entry, getEventsByLevel(events))
+  //
+  //  expect(level).toBe(1)
+  // })
 })
