@@ -124,7 +124,6 @@ function App() {
   const [events, setEvents] = useState(getEvents())
 
   const handleEventDrop = useCallback((events) => {
-    console.log(events)
     setEvents((prev) => {
       return [
         ...prev.filter(el => !events.find(event => event.id === el.id)),
