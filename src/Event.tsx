@@ -141,32 +141,12 @@ function GanttElementWrapper(props: {
                     {getDragPreview({
                       events: selectedEventsRef.current,
                       EventSlot,
-                    })
-                    //  map((el, i) => (
-                    //  <div
-                    //    style={{
-                    //      marginTop: `-15px`,
-                    //      marginLeft: `${i * 6}px`,
-                    //      width: `${(el.endDate - el.startDate) / tickWidthPixels}px`,
-                    //    }}
-                    //    key={el.id}
-                    //  >
-                    //    <EventSlot
-                    //      style={{
-                    //        boxShadow: '0px 0px 20px black',
-                    //      }}
-                    //      startDate={el.startDate}
-                    //      endDate={el.endDate}
-                    //      dateRange={dateRange}
-                    //      id={id}
-                    //      eventHeight={eventHeight}
-                    //      tickWidthPixels={tickWidthPixels}
-                    //    />
-                    //  </div>
-                    // ))
-                    }
+                      dateRange,
+                      tickWidthPixels,
+                    })}
                   </div>
-                ) : <div>&nbsp;</div>,
+                )
+              : <div>&nbsp;</div>,
             )
             return () => root.unmount()
           },
