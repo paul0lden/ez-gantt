@@ -59,7 +59,6 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     dateViewLevels,
     updateEvent,
     handleEventDrop,
-    resourceColumnDefaultWidth = 300,
     gridLayout = true,
     dropResolutionMode = 'as-selected',
     getDragPreview,
@@ -225,37 +224,40 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
             draggedElements.current = []
           },
         }),
-        draggable({
-          element: dividerRef.current,
-          onGenerateDragPreview({ nativeSetDragImage }) {
-            disableNativeDragPreview({ nativeSetDragImage })
-
-            preventUnhandled.start()
-          },
-          onDragStart() {
-            setResizing(true)
-          },
-          onDrag({ location }) {
-            getProposedWidth({ initialWidth, location })
-
-            wrapperRef.current.style.setProperty(
-              '--local-resizing-width',
-              `${getProposedWidth({ initialWidth, location })}px`,
-            )
-          },
-          onDrop({ location }) {
-            preventUnhandled.stop()
-            setResizing(false)
-
-            setInitialWidth(getProposedWidth({ initialWidth, location }))
-            wrapperRef.current.style.removeProperty('--local-resizing-width')
-          },
-        }),
       )
       resourceCleanUp()
       dateRangeCleanup()
     }
   }, [])
+
+  useEffect(() => {
+    return draggable({
+      element: dividerRef.current,
+      onGenerateDragPreview({ nativeSetDragImage }) {
+        disableNativeDragPreview({ nativeSetDragImage })
+
+        preventUnhandled.start()
+      },
+      onDragStart() {
+        setResizing(true)
+      },
+      onDrag({ location }) {
+        getProposedWidth({ initialWidth, location })
+
+        wrapperRef.current.style.setProperty(
+          '--local-resizing-width',
+          `${getProposedWidth({ initialWidth, location })}px`,
+        )
+      },
+      onDrop({ location }) {
+        preventUnhandled.stop()
+        setResizing(false)
+
+        setInitialWidth(getProposedWidth({ initialWidth, location }))
+        wrapperRef.current.style.removeProperty('--local-resizing-width')
+      },
+    })
+  }, [initialWidth])
 
   return (
     <div
