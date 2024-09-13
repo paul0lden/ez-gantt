@@ -212,7 +212,6 @@ function App() {
           Placeholder: MemoPlaceholder,
           Resource: MemoResource,
         }}
-        getDragPreview={getDragPreview}
       />
     </Box>
   )

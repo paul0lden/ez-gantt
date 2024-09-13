@@ -1,10 +1,18 @@
+import type { CSSProperties } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/element'
 import { autoScrollForExternal } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/external'
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { monitorForExternal } from '@atlaskit/pragmatic-drag-and-drop/external/adapter'
-import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import {
+  draggable,
+  monitorForElements,
+} from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
+import { preventUnhandled } from '@atlaskit/pragmatic-drag-and-drop/prevent-unhandled'
+
+import type { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 
 import { generateBackground, levelToDates } from './utils/background'
 import { useSelectionUtils } from './utils/selection'
@@ -15,6 +23,26 @@ import GanttElementWrapper from './Event'
 import type { GanttEvent, GanttProps } from './types'
 
 import './gantt.css'
+
+const widths = {
+  start: 300,
+  min: 100,
+  max: 700,
+}
+
+function getProposedWidth({
+  initialWidth,
+  location,
+}: {
+  initialWidth: number
+  location: DragLocationHistory
+}): number {
+  const diffX = location.current.input.clientX - location.initial.input.clientX
+  const proposedWidth = initialWidth + diffX
+
+  // ensure we don't go below the min or above the max allowed widths
+  return Math.min(Math.max(widths.min, proposedWidth), widths.max)
+}
 
 /**
  * Data driven gantt chart
@@ -41,11 +69,15 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
 
   const [selectedEvents, setSelectedEvents] = useState<string[]>([])
   const [isDragging, setDragging] = useState(false)
+  const [isResizing, setResizing] = useState(false)
+  const [initialWidth, setInitialWidth] = useState(widths.start)
 
+  const wrapperRef = useRef<HTMLDivElement>(null!)
   const selectionRect = useRef<HTMLDivElement>(null)
   const ganttScrollContainer = useRef<HTMLDivElement>(null)
   const ganttHeaderScrollContainer = useRef<HTMLDivElement>(null)
   const resourceScrollContainer = useRef<HTMLDivElement>(null)
+  const dividerRef = useRef<HTMLDivElement>(null!)
   const selectedEventsRef = useRef<Array<GanttEvent<EventT>>>([])
   const draggedElements = useRef<any[]>([])
 
@@ -193,6 +225,32 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
             draggedElements.current = []
           },
         }),
+        draggable({
+          element: dividerRef.current,
+          onGenerateDragPreview({ nativeSetDragImage }) {
+            disableNativeDragPreview({ nativeSetDragImage })
+
+            preventUnhandled.start()
+          },
+          onDragStart() {
+            setResizing(true)
+          },
+          onDrag({ location }) {
+            getProposedWidth({ initialWidth, location })
+
+            wrapperRef.current.style.setProperty(
+              '--local-resizing-width',
+              `${getProposedWidth({ initialWidth, location })}px`,
+            )
+          },
+          onDrop({ location }) {
+            preventUnhandled.stop()
+            setResizing(false)
+
+            setInitialWidth(getProposedWidth({ initialWidth, location }))
+            wrapperRef.current.style.removeProperty('--local-resizing-width')
+          },
+        }),
       )
       resourceCleanUp()
       dateRangeCleanup()
@@ -200,15 +258,21 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
   }, [])
 
   return (
-    <div className="gantt-wrapper">
-      <div
-        className="grid"
-        style={{
-          gridTemplateColumns: `${resourceColumnDefaultWidth}px 8px auto`,
-        }}
-      >
+    <div
+      ref={wrapperRef}
+      className="gantt-wrapper"
+      style={{
+        '--local-initial-width': `${initialWidth}px`,
+      } as CSSProperties}
+    >
+      <div className="grid content-container">
         <div></div>
-        <div className="splitter" />
+        <div
+          ref={dividerRef}
+          className={['splitter', isResizing ? 'disable-pointer' : []]
+            .flat()
+            .join(' ')}
+        />
         <div className="gantt-header" ref={ganttHeaderScrollContainer}>
           <div
             className="date-area"
@@ -239,18 +303,18 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           </div>
         </div>
       </div>
-      <div
-        className="grid overflow-auto"
-        style={{
-          gridTemplateColumns: `${resourceColumnDefaultWidth}px 8px auto`,
-        }}
-      >
+      <div className="grid overflow-auto content-container">
         <div className="resource-wrapper" ref={resourceScrollContainer}>
           {resources.map(data => (
             <Resource key={data.id} {...data} />
           ))}
         </div>
-        <div className="splitter" />
+        <div
+          ref={dividerRef}
+          className={['splitter', isResizing ? 'disable-pointer' : []]
+            .flat()
+            .join(' ')}
+        />
         <div
           ref={ganttScrollContainer}
           data-testid="gantt"
@@ -288,7 +352,11 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                               rowId={resource.id}
                               eventHeight={45}
                               tickWidthPixels={msPerPixel}
-                              key={event.placeholder ? `${event.id}-placeholder` : event.id}
+                              key={
+                                event.placeholder
+                                  ? `${event.id}-placeholder`
+                                  : event.id
+                              }
                               schedulingThreeshold={schedulingThreeshold}
                               updateEvent={updateEvent}
                               gridLayout={gridLayout}
