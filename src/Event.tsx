@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
 import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
+import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 
 import type { ReactEventHandler } from 'react'
 
@@ -121,16 +122,20 @@ function GanttElementWrapper(props: {
         events.current = []
       },
       onGenerateDragPreview: ({ location, nativeSetDragImage }) => {
-        setCustomNativeDragPreview({
-          nativeSetDragImage,
-          getOffset: preserveOffsetOnSource({
-            element,
-            input: location.current.input,
-          }),
-          render({ container }) {
-            const root = createRoot(container)
-            root.render(getDragPreview
-              ? (
+        if (!getDragPreview) {
+          disableNativeDragPreview({ nativeSetDragImage })
+        }
+        else {
+          setCustomNativeDragPreview({
+            nativeSetDragImage,
+            getOffset: preserveOffsetOnSource({
+              element,
+              input: location.current.input,
+            }),
+            render({ container }) {
+              const root = createRoot(container)
+              root.render(
+                (
                   <div
                     style={{
                       height: `auto`,
@@ -145,12 +150,12 @@ function GanttElementWrapper(props: {
                       tickWidthPixels,
                     })}
                   </div>
-                )
-              : <div>&nbsp;</div>,
-            )
-            return () => root.unmount()
-          },
-        })
+                ),
+              )
+              return () => root.unmount()
+            },
+          })
+        }
       },
     })
   }, [endDate, startDate, tickWidthPixels])
