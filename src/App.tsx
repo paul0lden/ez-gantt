@@ -120,6 +120,36 @@ function Placeholder() {
 
 const MemoPlaceholder = React.memo(Placeholder)
 
+function getDragPreview({
+  events,
+  EventSlot,
+  tickWidthPixels,
+  dateRange,
+}) {
+  return events.map((el, i) => (
+    <div
+      style={{
+        marginTop: `-15px`,
+        marginLeft: `${i * 6}px`,
+        width: `${(el.endDate - el.startDate) / tickWidthPixels}px`,
+      }}
+      key={el.id}
+    >
+      <EventSlot
+        style={{
+          boxShadow: '0px 0px 20px black',
+        }}
+        startDate={el.startDate}
+        endDate={el.endDate}
+        dateRange={dateRange}
+        id={el.id}
+        eventHeight={el.height}
+        tickWidthPixels={tickWidthPixels}
+      />
+    </div>
+  ))
+}
+
 function App() {
   const [events, setEvents] = useState(getEvents())
 
@@ -132,7 +162,7 @@ function App() {
     })
   }, [])
 
-  const dateRange = useMemo(
+  const dateRange = useMemo<[number, number]>(
     () => [
       startOfDay(new Date()).valueOf(),
       addDays(startOfDay(new Date()), 5).valueOf(),
@@ -182,6 +212,7 @@ function App() {
           Placeholder: MemoPlaceholder,
           Resource: MemoResource,
         }}
+        getDragPreview={getDragPreview}
       />
     </Box>
   )

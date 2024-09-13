@@ -34,6 +34,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     resourceColumnDefaultWidth = 300,
     gridLayout = true,
     dropResolutionMode = 'as-selected',
+    getDragPreview,
   } = props
 
   const [startDate, endDate] = dateRange
@@ -293,6 +294,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                               gridLayout={gridLayout}
                               selectedEventsRef={selectedEventsRef}
                               draggedElements={draggedElements}
+                              getDragPreview={getDragPreview}
                             />
                           )
                         : null
