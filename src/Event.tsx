@@ -8,6 +8,7 @@ import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/elem
 
 import type { ReactEventHandler } from 'react'
 
+import { ResizeableEvent } from './ResizeableEvent'
 import { getEventType } from './defaults'
 
 /**
@@ -42,10 +43,13 @@ function GanttElementWrapper(props: {
     getDragPreview,
     setDragging,
     draggedElements,
+    recalcRow,
   } = props
 
   const ref = useRef<HTMLDivElement>(null)
   const events = useRef<HTMLElement[]>([])
+
+  console.log(new Date(startDate), new Date(endDate))
 
   useEffect(() => {
     const element = ref.current
@@ -135,22 +139,20 @@ function GanttElementWrapper(props: {
             render({ container }) {
               const root = createRoot(container)
               root.render(
-                (
-                  <div
-                    style={{
-                      height: `auto`,
-                      width: `auto`,
-                      position: 'relative',
-                    }}
-                  >
-                    {getDragPreview({
-                      events: selectedEventsRef.current,
-                      EventSlot,
-                      dateRange,
-                      tickWidthPixels,
-                    })}
-                  </div>
-                ),
+                <div
+                  style={{
+                    height: `auto`,
+                    width: `auto`,
+                    position: 'relative',
+                  }}
+                >
+                  {getDragPreview({
+                    events: selectedEventsRef.current,
+                    EventSlot,
+                    dateRange,
+                    tickWidthPixels,
+                  })}
+                </div>,
               )
               return () => root.unmount()
             },
@@ -173,8 +175,10 @@ function GanttElementWrapper(props: {
         position: gridLayout ? 'relative' : 'absolute',
         ...(gridLayout
           ? {
-              gridColumnStart:
-                Math.max((startDate - dateRange[0]) / schedulingThreeshold + 1, 1),
+              gridColumnStart: Math.max(
+                (startDate - dateRange[0]) / schedulingThreeshold + 1,
+                1,
+              ),
               gridColumnEnd:
                 (endDate - dateRange[0]) / schedulingThreeshold + 1,
               gridRowStart: level + 1,
@@ -191,20 +195,32 @@ function GanttElementWrapper(props: {
             }),
       }}
     >
-      <EventSlot
+      <ResizeableEvent
+        schedulingThreeshold={schedulingThreeshold}
         startDate={startDate}
         endDate={endDate}
-        dateRange={dateRange}
-        i={level}
-        id={id}
         event={event}
-        updateEvent={updateEvent}
-        eventHeight={eventHeight}
         tickWidthPixels={tickWidthPixels}
-        selected={selected}
-        schedulingThreeshold={schedulingThreeshold}
-        {...eventProps}
-      />
+        id={id}
+        dateRange={dateRange}
+        updateEvent={updateEvent}
+        recalcRow={recalcRow}
+      >
+        <EventSlot
+          startDate={startDate}
+          endDate={endDate}
+          dateRange={dateRange}
+          i={level}
+          id={id}
+          event={event}
+          updateEvent={updateEvent}
+          eventHeight={eventHeight}
+          tickWidthPixels={tickWidthPixels}
+          selected={selected}
+          schedulingThreeshold={schedulingThreeshold}
+          {...eventProps}
+        />
+      </ResizeableEvent>
     </div>
   )
 }

@@ -44,6 +44,11 @@ function getProposedWidth({
   return Math.min(Math.max(widths.min, proposedWidth), widths.max)
 }
 
+// new event data model:
+// - user can provide the date-range type and data based on that type
+// - that allows to render multiple event on different level
+// - user will still have the possiblity to controll the
+
 /**
  * Data driven gantt chart
  */
@@ -77,6 +82,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
   const ganttHeaderScrollContainer = useRef<HTMLDivElement>(null)
   const resourceScrollContainer = useRef<HTMLDivElement>(null)
   const dividerRef = useRef<HTMLDivElement>(null!)
+  const headerDividerRef = useRef<HTMLDivElement>(null!)
   const selectedEventsRef = useRef<Array<GanttEvent<EventT>>>([])
   const draggedElements = useRef<any[]>([])
 
@@ -219,6 +225,11 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           },
         }),
         monitorForElements({
+          onDrag: ({ source, location }) => {
+            if (source.data.reason === 'resize-event') {
+
+            }
+          },
           onDrop: () => {
             setDragging(false)
             draggedElements.current = []
@@ -231,32 +242,60 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
   }, [])
 
   useEffect(() => {
-    return draggable({
-      element: dividerRef.current,
-      onGenerateDragPreview({ nativeSetDragImage }) {
-        disableNativeDragPreview({ nativeSetDragImage })
+    return combine(
+      draggable({
+        element: dividerRef.current,
+        onGenerateDragPreview({ nativeSetDragImage }) {
+          disableNativeDragPreview({ nativeSetDragImage })
 
-        preventUnhandled.start()
-      },
-      onDragStart() {
-        setResizing(true)
-      },
-      onDrag({ location }) {
-        getProposedWidth({ initialWidth, location })
+          preventUnhandled.start()
+        },
+        onDragStart() {
+          setResizing(true)
+        },
+        onDrag({ location }) {
+          getProposedWidth({ initialWidth, location })
 
-        wrapperRef.current.style.setProperty(
-          '--local-resizing-width',
-          `${getProposedWidth({ initialWidth, location })}px`,
-        )
-      },
-      onDrop({ location }) {
-        preventUnhandled.stop()
-        setResizing(false)
+          wrapperRef.current.style.setProperty(
+            '--local-resizing-width',
+            `${getProposedWidth({ initialWidth, location })}px`,
+          )
+        },
+        onDrop({ location }) {
+          preventUnhandled.stop()
+          setResizing(false)
 
-        setInitialWidth(getProposedWidth({ initialWidth, location }))
-        wrapperRef.current.style.removeProperty('--local-resizing-width')
-      },
-    })
+          setInitialWidth(getProposedWidth({ initialWidth, location }))
+          wrapperRef.current.style.removeProperty('--local-resizing-width')
+        },
+      }),
+      draggable({
+        element: headerDividerRef.current,
+        onGenerateDragPreview({ nativeSetDragImage }) {
+          disableNativeDragPreview({ nativeSetDragImage })
+
+          preventUnhandled.start()
+        },
+        onDragStart() {
+          setResizing(true)
+        },
+        onDrag({ location }) {
+          getProposedWidth({ initialWidth, location })
+
+          wrapperRef.current.style.setProperty(
+            '--local-resizing-width',
+            `${getProposedWidth({ initialWidth, location })}px`,
+          )
+        },
+        onDrop({ location }) {
+          preventUnhandled.stop()
+          setResizing(false)
+
+          setInitialWidth(getProposedWidth({ initialWidth, location }))
+          wrapperRef.current.style.removeProperty('--local-resizing-width')
+        },
+      }),
+    )
   }, [initialWidth])
 
   return (
@@ -270,7 +309,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
       <div className="grid content-container">
         <div></div>
         <div
-          ref={dividerRef}
+          ref={headerDividerRef}
           className={['splitter', isResizing ? 'disable-pointer' : []]
             .flat()
             .join(' ')}
@@ -321,7 +360,9 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           ref={ganttScrollContainer}
           data-testid="gantt"
           data-role="gantt"
-          className="gantt"
+          className={['gantt', isResizing ? 'disable-pointer' : []]
+            .flat()
+            .join(' ')}
           onPointerDown={selectionRectStart}
           onPointerUp={selectionRectEnd}
         >
@@ -329,12 +370,12 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
             style={{
               width: ganttWidth,
               backgroundRepeat: 'no-repeat',
-              backgroundImage: backgroundGrid,
+              // backgroundImage: backgroundGrid,
             }}
           >
             {resources.map((resource) => {
               const list = useCallback(
-                (eventsByLevel) => {
+                ({ eventsByLevel, recalcRow }) => {
                   return eventsByLevel.map((level, i) =>
                     level.map((event) => {
                       return event
@@ -342,6 +383,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
                             <GanttElementWrapper
                               {...event}
                               event={event}
+                              recalcRow={recalcRow}
                               ganttRef={ganttScrollContainer}
                               onClick={handleEventClick}
                               EventSlot={event.placeholder ? Placeholder : Event}

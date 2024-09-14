@@ -1,6 +1,11 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
+
+import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
+import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 
 import './resizeable.css'
+import type { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 
 export function ResizeableEvent(props) {
   const {
@@ -9,6 +14,7 @@ export function ResizeableEvent(props) {
     dateRange,
     tickWidthPixels,
     schedulingThreeshold,
+    recalcRow,
     updateEvent,
     id,
     event,
@@ -18,132 +24,142 @@ export function ResizeableEvent(props) {
 
   const startWidth = (endDate - startDate) / tickWidthPixels
   const startX = Math.abs(dateRange[0] - startDate) / tickWidthPixels
-  const element = useRef<Element | null>(null)
+  const element = useRef<HTMLElement>(null!)
   const gridLayout = useRef(false)
-  const startPos = useRef({ x: 0, y: 0 })
+  const leftRef = useRef<HTMLDivElement>(null!)
+  const rightRef = useRef<HTMLDivElement>(null!)
 
-  const pointerDownHandler = (e) => {
-    e.preventDefault()
-    e.stopPropagation()
-    e.target.setPointerCapture(e.pointerId)
+  const getProposedWidth = ({
+    location,
+    direction,
+  }: {
+    location: DragLocationHistory
+    direction: 'left' | 'right'
+  }) => {
+    if (direction === 'left') {
+      console.log(
+        (Math.round((location.current.input.clientX
+        - location.current.dropTargets[0].data.x) / schedulingThreeshold)
+        ))
+      const date1
+        = dateRange[0]
+        + (Math.round((location.current.input.clientX
+        - location.current.dropTargets[0].data.x) / (schedulingThreeshold / tickWidthPixels))
+        * schedulingThreeshold)
+      const date2 = endDate
 
-    element.current = document.querySelector(`[data-event-id="${id}"]`)
+      const newStartDate = Math.min(date1, date2)
+      const newEndDate = Math.max(date1, date2)
+      return { startDate: newStartDate, endDate: newEndDate }
+    }
+    else {
+      const diffX
+        = location.current.input.clientX
+        - location.current.dropTargets[0].data.x
+        + startWidth
+
+      const newStartX = Math.min(startX, startX + startWidth + diffX)
+      const newWidth = Math.max(startWidth + diffX, -diffX - startWidth)
+
+      return { startDate: newStartX, endDate: newWidth }
+    }
+  }
+  useEffect(() => {
     gridLayout.current
       = (
         document.querySelector(
           `[data-timerange="${event.resource}"]`,
         ) as HTMLElement
       )?.style?.getPropertyValue('display') === 'grid'
-    if (element.current) {
-      const { x, y } = element.current.getBoundingClientRect()
-      startPos.current = { x, y }
-    }
-  }
+  }, [])
 
-  const pointerMoveHandler = (e: PointerEvent, pos: 'left' | 'right') => {
-    if (!element.current)
-      return
+  useEffect(() => {
+    return combine(
+      draggable({
+        element: leftRef.current,
+        getInitialData: () => ({
+          reason: 'resize-event',
+        }),
+        onDragStart: () => {
+          element.current = document.querySelector(`[data-event-id="${id}"]`)!
+        },
+        onGenerateDragPreview({ nativeSetDragImage }) {
+          disableNativeDragPreview({ nativeSetDragImage })
+        },
+        onDrag({ location }) {
+          const { startDate, endDate } = getProposedWidth({
+            location,
+            direction: 'left',
+          })
 
-    // if left update the start date
-    if (pos === 'left') {
-      const diff
-        = Math.round(
-          (e.clientX - startPos.current.x)
-          / (schedulingThreeshold / tickWidthPixels),
-        )
-        * (schedulingThreeshold / tickWidthPixels)
-      const newStartX = Math.min(startX + diff, startX + startWidth)
-      const newWidth = Math.max(startWidth - diff, diff - startWidth)
-      if (gridLayout.current) {
-        element.current.style.gridColumnStart
-          = newStartX / (schedulingThreeshold / tickWidthPixels) + 1
-        element.current.style.gridColumnEnd
-          = (newStartX + newWidth) / (schedulingThreeshold / tickWidthPixels) + 1
-      }
-      else {
-        element.current.style.left = `${newStartX}px`
-        element.current.style.width = `${newWidth}px`
-      }
-    }
-    else {
-      const diff
-        = Math.round(
-          (e.clientX - (startPos.current.x + startWidth))
-          / (schedulingThreeshold / tickWidthPixels),
-        )
-        * (schedulingThreeshold / tickWidthPixels)
-      const newStartX = Math.min(startX, startX + startWidth + diff)
-      const newWidth = Math.max(startWidth + diff, -diff - startWidth)
-      if (gridLayout.current) {
-        element.current.style.gridColumnStart
-          = newStartX / (schedulingThreeshold / tickWidthPixels) + 1
-        element.current.style.gridColumnEnd
-          = (newStartX + newWidth) / (schedulingThreeshold / tickWidthPixels) + 1
-      }
-      else {
-        element.current.style.left = `${newStartX}px`
-        element.current.style.width = `${newWidth}px`
-      }
-    }
-  }
+          if (!location.current.dropTargets[0])
+            return
 
-  const pointerUpHandler = (e, pos) => {
-    e.preventDefault()
-    e.stopPropagation()
-    e.target.releasePointerCapture(e.pointerId)
+          updateEvent(
+            {
+              ...event,
+              startDate,
+              endDate,
+            },
+          )
+        },
+        onDrop: ({ location }) => {
+          const { startDate, endDate } = getProposedWidth({
+            location,
+            direction: 'left',
+          })
+          recalcRow([])
+          updateEvent({ ...event, startDate, endDate })
+        },
+      }),
+      draggable({
+        element: rightRef.current,
+        onDragStart: () => {
+          element.current = document.querySelector(`[data-event-id="${id}"]`)!
+        },
+        onGenerateDragPreview({ nativeSetDragImage }) {
+          disableNativeDragPreview({ nativeSetDragImage })
+        },
+        onDrag({ location }) {
+          const { startDate, endDate } = getProposedWidth({
+            location,
+            direction: 'right',
+          })
 
-    if (!element.current)
-      return
+          if (!location.current.dropTargets[0])
+            return
 
-    if (pos === 'left') {
-      const diff
-        = Math.round(
-          (e.clientX - startPos.current.x)
-          / (schedulingThreeshold / tickWidthPixels),
-        )
-        * (schedulingThreeshold / tickWidthPixels)
-      const newStartX = Math.min(startX + diff, startX + startWidth)
-      const newWidth = Math.max(startWidth - diff, diff - startWidth)
-
-      const newStartDate = dateRange[0] + newStartX * tickWidthPixels
-      const newEndDate = newWidth * tickWidthPixels + newStartDate
-
-      updateEvent({ ...event, startDate: newStartDate, endDate: newEndDate })
-    }
-    else {
-      const diff
-        = Math.round(
-          (e.clientX - (startPos.current.x + startWidth))
-          / (schedulingThreeshold / tickWidthPixels),
-        )
-        * (schedulingThreeshold / tickWidthPixels)
-      const newStartX = Math.min(startX, startX + startWidth + diff)
-      const newWidth = Math.max(startWidth + diff, -diff - startWidth)
-
-      const newStartDate = dateRange[0] + newStartX * tickWidthPixels
-      const newEndDate = newWidth * tickWidthPixels + newStartDate
-
-      updateEvent({ ...event, startDate: newStartDate, endDate: newEndDate })
-    }
-
-    element.current = null
-  }
+          recalcRow([
+            {
+              ...event,
+              startDate,
+              endDate,
+            },
+          ])
+        },
+        onDrop: ({ location }) => {
+          const { startDate, endDate } = getProposedWidth({
+            location,
+            direction: 'right',
+          })
+          recalcRow([])
+          updateEvent({ ...event, startDate, endDate })
+        },
+      }),
+    )
+  }, [])
 
   return (
     <>
       <div
+        ref={leftRef}
         data-role="resize-left"
-        onPointerDown={pointerDownHandler}
-        onPointerMove={e => pointerMoveHandler(e, 'left')}
-        onPointerUp={e => pointerUpHandler(e, 'left')}
         className="resizeable-resize"
         style={{ left: 0 }}
       />
       {children}
       <div
-        onPointerDown={pointerDownHandler}
-        onPointerMove={e => pointerMoveHandler(e, 'right')}
-        onPointerUp={e => pointerUpHandler(e, 'right')}
+        ref={rightRef}
         className="resizeable-resize"
         data-role="resize-right"
         style={{ right: 0 }}
