@@ -70,37 +70,26 @@ function Event(props) {
   } = props
 
   return (
-    <ResizeableEvent
-      schedulingThreeshold={schedulingThreeshold}
-      startDate={startDate}
-      endDate={endDate}
-      event={event}
-      tickWidthPixels={tickWidthPixels}
-      id={id}
-      dateRange={dateRange}
-      updateEvent={updateEvent}
+    <Box
+      {...rest}
+      sx={{
+        'display': 'flex',
+        'background': 'grey',
+        'height': 40,
+        ':hover': {
+          outline: '2px aqua solid',
+        },
+        'outline': selected ? '2px red solid' : 'unset',
+        'borderRadius': 2,
+      }}
     >
-      <Box
-        {...rest}
-        sx={{
-          'display': 'flex',
-          'background': 'grey',
-          'height': 40,
-          ':hover': {
-            outline: '2px aqua solid',
-          },
-          'outline': selected ? '2px red solid' : 'unset',
-          'borderRadius': 2,
-        }}
-      >
-        <Box sx={{ overflow: 'hidden', marginInline: '16px' }}>
-          {id}
-          {' '}
-          -
-          {new Date(startDate).toLocaleString()}
-        </Box>
+      <Box sx={{ overflow: 'hidden', marginInline: '16px' }}>
+        {id}
+        {' '}
+        -
+        {new Date(startDate).toLocaleString()}
       </Box>
-    </ResizeableEvent>
+    </Box>
   )
 }
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { dropTargetForExternal } from '@atlaskit/pragmatic-drag-and-drop/external/adapter'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
@@ -38,16 +38,17 @@ function TimeRangeRow<EventT, ResourceT>(
       placeholder: boolean
     }>
   >([])
-
+  const [resizeEvent, setResizeEvent] = useState([])
   const eventsByLevel = useMemo(
     () =>
       getEventsByLevel([
         ...(events ?? []).filter(
-          el => !draggedElements.current.includes(el.id),
+          el => !draggedElements.current.includes(el.id) && resizeEvent?.[0]?.id !== el.id,
         ),
         ...placeholderPos,
+        // ...resizeEvent,
       ]),
-    [events, placeholderPos],
+    [events, placeholderPos, resizeEvent],
   )
 
   const rowRef = useRef<HTMLDivElement>(null)
@@ -173,6 +174,8 @@ function TimeRangeRow<EventT, ResourceT>(
             current: { dropTargets, input },
           } = location
           const events = source.data.events
+          if (!events)
+            return
 
           const updatedEvents = []
           for (const { dragDiffX, width, ...event } of events) {
@@ -210,6 +213,9 @@ function TimeRangeRow<EventT, ResourceT>(
             current: { input, dropTargets },
           } = location
 
+          if (!source.data.events)
+            return
+
           const drawData = []
           for (const { dragDiffX, width, id, height } of source.data.events) {
             const target = dropTargets.find(el => el.data.location === 'row')
@@ -230,6 +236,14 @@ function TimeRangeRow<EventT, ResourceT>(
       }),
     )
   }, [placeholderPos, tickWidthPixels, startDate])
+
+  const recalcRow = useCallback(
+    (events) => {
+      // console.log(new Date(events?.[0]?.startDate))
+      setResizeEvent(events)
+    },
+    [],
+  )
 
   return (
     <div
@@ -261,7 +275,7 @@ function TimeRangeRow<EventT, ResourceT>(
       ref={rowRef}
       data-timerange={resource.id}
     >
-      {children(eventsByLevel)}
+      {children({ eventsByLevel, recalcRow })}
     </div>
   )
 }
