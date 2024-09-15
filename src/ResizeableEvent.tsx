@@ -37,10 +37,6 @@ export function ResizeableEvent(props) {
     direction: 'left' | 'right'
   }) => {
     if (direction === 'left') {
-      console.log(
-        (Math.round((location.current.input.clientX
-        - location.current.dropTargets[0].data.x) / schedulingThreeshold)
-        ))
       const date1
         = dateRange[0]
         + (Math.round((location.current.input.clientX
