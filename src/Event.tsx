@@ -49,8 +49,6 @@ function GanttElementWrapper(props: {
   const ref = useRef<HTMLDivElement>(null)
   const events = useRef<HTMLElement[]>([])
 
-  console.log(new Date(startDate), new Date(endDate))
-
   useEffect(() => {
     const element = ref.current
 

@@ -22,8 +22,6 @@ export function ResizeableEvent(props) {
     children,
   } = props
 
-  const startWidth = (endDate - startDate) / tickWidthPixels
-  const startX = Math.abs(dateRange[0] - startDate) / tickWidthPixels
   const element = useRef<HTMLElement>(null!)
   const gridLayout = useRef(false)
   const leftRef = useRef<HTMLDivElement>(null!)
@@ -39,9 +37,12 @@ export function ResizeableEvent(props) {
     if (direction === 'left') {
       const date1
         = dateRange[0]
-        + (Math.round((location.current.input.clientX
-        - location.current.dropTargets[0].data.x) / (schedulingThreeshold / tickWidthPixels))
-        * schedulingThreeshold)
+        + Math.round(
+          (location.current.input.clientX
+          - location.current.dropTargets[0].data.x)
+          / (schedulingThreeshold / tickWidthPixels),
+        )
+        * schedulingThreeshold
       const date2 = endDate
 
       const newStartDate = Math.min(date1, date2)
@@ -49,17 +50,22 @@ export function ResizeableEvent(props) {
       return { startDate: newStartDate, endDate: newEndDate }
     }
     else {
-      const diffX
-        = location.current.input.clientX
-        - location.current.dropTargets[0].data.x
-        + startWidth
+      const date1
+        = dateRange[0]
+        + Math.round(
+          (location.current.input.clientX
+          - location.current.dropTargets[0].data.x)
+          / (schedulingThreeshold / tickWidthPixels),
+        )
+        * schedulingThreeshold
+      const date2 = startDate
 
-      const newStartX = Math.min(startX, startX + startWidth + diffX)
-      const newWidth = Math.max(startWidth + diffX, -diffX - startWidth)
-
-      return { startDate: newStartX, endDate: newWidth }
+      const newStartDate = Math.min(date1, date2)
+      const newEndDate = Math.max(date1, date2)
+      return { startDate: newStartDate, endDate: newEndDate }
     }
   }
+
   useEffect(() => {
     gridLayout.current
       = (
@@ -91,13 +97,11 @@ export function ResizeableEvent(props) {
           if (!location.current.dropTargets[0])
             return
 
-          updateEvent(
-            {
-              ...event,
-              startDate,
-              endDate,
-            },
-          )
+          updateEvent({
+            ...event,
+            startDate,
+            endDate,
+          })
         },
         onDrop: ({ location }) => {
           const { startDate, endDate } = getProposedWidth({
@@ -125,13 +129,11 @@ export function ResizeableEvent(props) {
           if (!location.current.dropTargets[0])
             return
 
-          recalcRow([
-            {
-              ...event,
-              startDate,
-              endDate,
-            },
-          ])
+          updateEvent({
+            ...event,
+            startDate,
+            endDate,
+          })
         },
         onDrop: ({ location }) => {
           const { startDate, endDate } = getProposedWidth({
@@ -143,7 +145,7 @@ export function ResizeableEvent(props) {
         },
       }),
     )
-  }, [])
+  }, [startDate, endDate])
 
   return (
     <>
