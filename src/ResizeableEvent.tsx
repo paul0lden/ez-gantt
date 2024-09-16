@@ -5,75 +5,16 @@ import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/elem
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 
 import './resizeable.css'
-import type { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 
 export function ResizeableEvent(props) {
   const {
-    startDate,
-    endDate,
-    dateRange,
-    tickWidthPixels,
-    schedulingThreeshold,
-    recalcRow,
-    updateEvent,
-    id,
     event,
-    minWidth = 30,
     children,
+    ganttRef,
   } = props
 
-  const element = useRef<HTMLElement>(null!)
-  const gridLayout = useRef(false)
   const leftRef = useRef<HTMLDivElement>(null!)
   const rightRef = useRef<HTMLDivElement>(null!)
-
-  const getProposedWidth = ({
-    location,
-    direction,
-  }: {
-    location: DragLocationHistory
-    direction: 'left' | 'right'
-  }) => {
-    if (direction === 'left') {
-      const date1
-        = dateRange[0]
-        + Math.round(
-          (location.current.input.clientX
-          - location.current.dropTargets[0].data.x)
-          / (schedulingThreeshold / tickWidthPixels),
-        )
-        * schedulingThreeshold
-      const date2 = endDate
-
-      const newStartDate = Math.min(date1, date2)
-      const newEndDate = Math.max(date1, date2)
-      return { startDate: newStartDate, endDate: newEndDate }
-    }
-    else {
-      const date1
-        = dateRange[0]
-        + Math.round(
-          (location.current.input.clientX
-          - location.current.dropTargets[0].data.x)
-          / (schedulingThreeshold / tickWidthPixels),
-        )
-        * schedulingThreeshold
-      const date2 = startDate
-
-      const newStartDate = Math.min(date1, date2)
-      const newEndDate = Math.max(date1, date2)
-      return { startDate: newStartDate, endDate: newEndDate }
-    }
-  }
-
-  useEffect(() => {
-    gridLayout.current
-      = (
-        document.querySelector(
-          `[data-timerange="${event.resource}"]`,
-        ) as HTMLElement
-      )?.style?.getPropertyValue('display') === 'grid'
-  }, [])
 
   useEffect(() => {
     return combine(
@@ -81,71 +22,26 @@ export function ResizeableEvent(props) {
         element: leftRef.current,
         getInitialData: () => ({
           reason: 'resize-event',
+          direction: 'left',
+          event,
         }),
-        onDragStart: () => {
-          element.current = document.querySelector(`[data-event-id="${id}"]`)!
-        },
         onGenerateDragPreview({ nativeSetDragImage }) {
           disableNativeDragPreview({ nativeSetDragImage })
-        },
-        onDrag({ location }) {
-          const { startDate, endDate } = getProposedWidth({
-            location,
-            direction: 'left',
-          })
-
-          if (!location.current.dropTargets[0])
-            return
-
-          updateEvent({
-            ...event,
-            startDate,
-            endDate,
-          })
-        },
-        onDrop: ({ location }) => {
-          const { startDate, endDate } = getProposedWidth({
-            location,
-            direction: 'left',
-          })
-          recalcRow([])
-          updateEvent({ ...event, startDate, endDate })
         },
       }),
       draggable({
         element: rightRef.current,
-        onDragStart: () => {
-          element.current = document.querySelector(`[data-event-id="${id}"]`)!
-        },
+        getInitialData: () => ({
+          reason: 'resize-event',
+          direction: 'right',
+          event,
+        }),
         onGenerateDragPreview({ nativeSetDragImage }) {
           disableNativeDragPreview({ nativeSetDragImage })
         },
-        onDrag({ location }) {
-          const { startDate, endDate } = getProposedWidth({
-            location,
-            direction: 'right',
-          })
-
-          if (!location.current.dropTargets[0])
-            return
-
-          updateEvent({
-            ...event,
-            startDate,
-            endDate,
-          })
-        },
-        onDrop: ({ location }) => {
-          const { startDate, endDate } = getProposedWidth({
-            location,
-            direction: 'right',
-          })
-          recalcRow([])
-          updateEvent({ ...event, startDate, endDate })
-        },
       }),
     )
-  }, [startDate, endDate])
+  }, [event])
 
   return (
     <>
@@ -154,6 +50,7 @@ export function ResizeableEvent(props) {
         data-role="resize-left"
         className="resizeable-resize"
         style={{ left: 0 }}
+        onPointerDown={e => ganttRef.current.setPointerCapture(e.pointerId)}
       />
       {children}
       <div
@@ -161,6 +58,7 @@ export function ResizeableEvent(props) {
         className="resizeable-resize"
         data-role="resize-right"
         style={{ right: 0 }}
+        onPointerDown={e => ganttRef.current.setPointerCapture(e.pointerId)}
       />
     </>
   )

@@ -23,6 +23,7 @@ import GanttElementWrapper from './Event'
 import type { GanttEvent, GanttProps } from './types'
 
 import './gantt.css'
+import { useResizeEventDnD } from './utils/resizeDnD'
 
 const widths = {
   start: 300,
@@ -85,6 +86,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
   const headerDividerRef = useRef<HTMLDivElement>(null!)
   const selectedEventsRef = useRef<Array<GanttEvent<EventT>>>([])
   const draggedElements = useRef<any[]>([])
+  const pointerIdRef = useRef<number | null>(null)
 
   const updateEventSelection = useCallback(
     (selection: React.SetStateAction<string[]>) => {
@@ -110,10 +112,16 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     selectedEvents,
     setSelectedEvents: updateEventSelection,
   })
+  const { dragHandler, dropHanlder } = useResizeEventDnD({
+    updateEvent,
+    threeshold: schedulingThreeshold,
+    msPerPixel,
+    dateRange,
+  })
 
   const handleEventClick = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      e.stopPropagation()
+      // e.stopPropagation()
       const id = e.currentTarget.getAttribute('data-event-id')
       if (!id)
         return
@@ -225,14 +233,33 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           },
         }),
         monitorForElements({
-          onDrag: ({ source, location }) => {
+          onDragStart: ({ source }) => {
             if (source.data.reason === 'resize-event') {
-
+              console.log(pointerIdRef.current)
+              ganttScrollContainer.current?.setPointerCapture(
+                pointerIdRef.current,
+              )
             }
           },
-          onDrop: () => {
+          onDrag: ({ source, location }) => {
+            if (source.data.reason === 'resize-event') {
+              console.log(
+                ganttScrollContainer.current?.hasPointerCapture(
+                  pointerIdRef.current,
+                ),
+              )
+              dragHandler({ location, ...source.data })
+            }
+          },
+          onDrop: ({ source, location }) => {
             setDragging(false)
             draggedElements.current = []
+            if (source.data.reason === 'resize-event') {
+              dropHanlder({ location, ...source.data })
+              ganttScrollContainer.current?.releasePointerCapture(
+                pointerIdRef.current,
+              )
+            }
           },
         }),
       )
@@ -302,9 +329,11 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     <div
       ref={wrapperRef}
       className="gantt-wrapper"
-      style={{
-        '--local-initial-width': `${initialWidth}px`,
-      } as CSSProperties}
+      style={
+        {
+          '--local-initial-width': `${initialWidth}px`,
+        } as CSSProperties
+      }
     >
       <div className="grid content-container">
         <div></div>
@@ -363,8 +392,14 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           className={['gantt', isResizing ? 'disable-pointer' : []]
             .flat()
             .join(' ')}
-          onPointerDown={selectionRectStart}
-          onPointerUp={selectionRectEnd}
+          onPointerDown={(e) => {
+            pointerIdRef.current = e.pointerId
+            selectionRectStart(e)
+          }}
+          onPointerUp={(e) => {
+            pointerIdRef.current = null
+            selectionRectEnd(e)
+          }}
         >
           <div
             style={{

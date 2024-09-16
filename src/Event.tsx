@@ -203,6 +203,7 @@ function GanttElementWrapper(props: {
         dateRange={dateRange}
         updateEvent={updateEvent}
         recalcRow={recalcRow}
+        ganttRef={ganttRef}
       >
         <EventSlot
           startDate={startDate}
