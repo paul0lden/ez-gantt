@@ -76,6 +76,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
   const [isDragging, setDragging] = useState(false)
   const [isResizing, setResizing] = useState(false)
   const [initialWidth, setInitialWidth] = useState(widths.start)
+  const [isSelecting, setSelecting] = useState(false)
 
   const wrapperRef = useRef<HTMLDivElement>(null!)
   const selectionRect = useRef<HTMLDivElement>(null)
@@ -394,10 +395,12 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
             .join(' ')}
           onPointerDown={(e) => {
             pointerIdRef.current = e.pointerId
+            setSelecting(true)
             selectionRectStart(e)
           }}
           onPointerUp={(e) => {
             pointerIdRef.current = null
+            setSelecting(false)
             selectionRectEnd(e)
           }}
         >
@@ -471,7 +474,10 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
               )
             })}
           </div>
-          <div className="select-rect" ref={selectionRect} />
+          {
+            isSelecting
+            && <div className="select-rect" ref={selectionRect} />
+          }
         </div>
       </div>
     </div>
