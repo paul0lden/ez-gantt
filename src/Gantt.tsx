@@ -236,7 +236,6 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
         monitorForElements({
           onDragStart: ({ source }) => {
             if (source.data.reason === 'resize-event') {
-              console.log(pointerIdRef.current)
               ganttScrollContainer.current?.setPointerCapture(
                 pointerIdRef.current,
               )
@@ -244,11 +243,6 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           },
           onDrag: ({ source, location }) => {
             if (source.data.reason === 'resize-event') {
-              console.log(
-                ganttScrollContainer.current?.hasPointerCapture(
-                  pointerIdRef.current,
-                ),
-              )
               dragHandler({ location, ...source.data })
             }
           },
@@ -408,7 +402,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
             style={{
               width: ganttWidth,
               backgroundRepeat: 'no-repeat',
-              // backgroundImage: backgroundGrid,
+              backgroundImage: backgroundGrid,
             }}
           >
             {resources.map((resource) => {
