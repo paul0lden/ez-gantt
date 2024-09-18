@@ -114,6 +114,7 @@ function GanttElementWrapper(props: {
           ) as HTMLElement
           if (!event)
             continue
+          event.style.setProperty('display', 'none')
           out.push(event)
           dragged.push(id)
         }
