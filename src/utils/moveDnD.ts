@@ -1,6 +1,8 @@
+import type { BaseEventPayload, ElementDragType } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import type { MutableRefObject } from 'react'
 import type { GanttEvent, GanttProps, GanttResource } from '../types'
 import { useCallback, useState } from 'react'
+import { isDragEventData } from './dragData'
 
 interface MoveEventDnDProps {
   gridLayout: boolean
@@ -13,7 +15,7 @@ interface MoveEventDnDProps {
   selectedEventsRef: MutableRefObject<Array<unknown>>
 }
 
-function findDistance(
+export function findDistance(
   resources: Array<GanttResource<object>>,
   initialResource: string,
   targetResource: string,
@@ -122,15 +124,20 @@ export function useMoveEventDnD({
     drawPlaceholder(drawData)
   }, [drawPlaceholder, dropResolutionMode, resources])
 
-  const dropHandler = useCallback(({ source, location }) => {
+  const dropHandler = useCallback(({ source, location }: BaseEventPayload<ElementDragType>) => {
     const {
       current: { dropTargets, input },
     } = location
+    const data = source.data
+
+    if (!isDragEventData(data)) {
+      return
+    }
 
     const {
       events,
       initialResource,
-    } = source.data
+    } = data
     if (!events)
       return
 

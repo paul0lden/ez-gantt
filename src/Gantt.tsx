@@ -256,7 +256,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
           onDrag: ({ source, location }) => {
             if (location.current.dropTargets.find(el => el.data.location === 'row')) {
               if (source.data.reason === 'resize-event') {
-                resizeDragHandler({ location, ...source.data })
+                resizeDragHandler({ location, source })
               }
               else if (source.data.reason === 'drag-event') {
                 dragHandler({ source, location })
@@ -267,7 +267,7 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
             draggedElements.current = []
             if (location.current.dropTargets.find(el => el.data.location === 'row')) {
               if (source.data.reason === 'resize-event') {
-                resizeDropHandler({ location, ...source.data })
+                resizeDropHandler({ location, source })
               }
               else if (source.data.reason === 'drag-event') {
                 dropHandler({ source, location })
