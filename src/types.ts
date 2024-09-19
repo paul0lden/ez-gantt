@@ -49,8 +49,7 @@ interface GanttProps<EventT, ResourceT> {
   slotsProps?: GanttSlotsProps<EventT, ResourceT>
   dateRange: [number, number]
   handleEventDrop: (
-    event: GanttEvent<EventT>,
-    resource: GanttResource<ResourceT>
+    events: Array<GanttEvent<EventT>>,
   ) => void
   gridLayout: boolean
   dropResolutionMode: 'as-selected' | 'single-resource'
@@ -77,10 +76,10 @@ interface TimeRangeProps<EventT, ResourceT> {
 }
 
 export type {
+  GanttEvent,
+  GanttProps,
+  GanttResource,
   GanttSlots,
   GanttSlotsProps,
-  GanttProps,
-  GanttEvent,
-  GanttResource,
   TimeRangeProps,
 }
