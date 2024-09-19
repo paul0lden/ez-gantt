@@ -117,16 +117,19 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
     msPerPixel,
     dateRange,
   })
-  const { 
+  const {
     dragHandler,
     dropHandler,
-    placeholders
+    placeholders,
   } = useMoveEventDnD({
     gridLayout,
     dateRange,
     handleEventDrop,
     threeshold: schedulingThreeshold,
     msPerPixel,
+    resources,
+    dropResolutionMode,
+    selectedEventsRef,
   })
 
   const handleEventClick = useCallback(
@@ -251,20 +254,24 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
         }),
         monitorForElements({
           onDrag: ({ source, location }) => {
-            if (source.data.reason === 'resize-event') {
-              resizeDragHandler({ location, ...source.data })
-            }
-            else if (source.data.reason === 'drag-event') {
-              dragHandler({ source, location })
+            if (location.current.dropTargets.find(el => el.data.location === 'row')) {
+              if (source.data.reason === 'resize-event') {
+                resizeDragHandler({ location, ...source.data })
+              }
+              else if (source.data.reason === 'drag-event') {
+                dragHandler({ source, location })
+              }
             }
           },
           onDrop: ({ source, location }) => {
             draggedElements.current = []
-            if (source.data.reason === 'resize-event') {
-              resizeDropHandler({ location, ...source.data })
-            }
-            else if (source.data.reason === 'drag-event') {
-              dropHandler({ source, location })
+            if (location.current.dropTargets.find(el => el.data.location === 'row')) {
+              if (source.data.reason === 'resize-event') {
+                resizeDropHandler({ location, ...source.data })
+              }
+              else if (source.data.reason === 'drag-event') {
+                dropHandler({ source, location })
+              }
             }
           },
         }),
