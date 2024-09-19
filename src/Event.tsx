@@ -57,31 +57,26 @@ function GanttElementWrapper(props: {
 
     return draggable({
       element,
-      getInitialData: (e) => {
+      getInitialData: ({ input, element }) => {
         const out = []
 
-        const events = []
-        for (const { id } of selectedEventsRef.current) {
-          const event = ganttRef.current.querySelector(
+        const initialResource = event.resource
+
+        for (const data of selectedEventsRef.current) {
+          const { id } = data
+
+          const eventElement = ganttRef.current.querySelector(
             `[data-event-id="${id}"]`,
           ) as HTMLElement
-          if (!event)
-            continue
-          events.push(event)
-        }
-
-        for (const event of events) {
-          const id = event.getAttribute('data-event-id')
-          const data = selectedEventsRef.current.find(el => el.id === id)
-          const dragDiffX = e.input.clientX - event.getBoundingClientRect().x
+          const dragDiffX = input.clientX - eventElement.getBoundingClientRect().x
 
           out.push({
             startDate: data.startDate,
             endDate: data.endDate,
             id,
             resource: data.resource,
-            width: event.getBoundingClientRect().width,
-            height: event.getBoundingClientRect().height,
+            width: eventElement.getBoundingClientRect().width,
+            height: eventElement.getBoundingClientRect().height,
             dragDiffX,
             type: getEventType(),
           })
@@ -89,6 +84,7 @@ function GanttElementWrapper(props: {
         return {
           events: out,
           reason: 'drag-event',
+          initialResource,
         }
       },
       getInitialDataForExternal: (e) => {

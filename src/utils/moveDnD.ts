@@ -1,4 +1,5 @@
-import type { GanttEvent } from '../types'
+import type { MutableRefObject } from 'react'
+import type { GanttEvent, GanttProps, GanttResource } from '../types'
 import { useCallback, useState } from 'react'
 
 interface MoveEventDnDProps {
@@ -7,6 +8,25 @@ interface MoveEventDnDProps {
   msPerPixel: number
   dateRange: [number, number]
   handleEventDrop: (param: any[]) => void
+  resources: Array<GanttResource<object>>
+  dropResolutionMode: GanttProps<any, any>['dropResolutionMode']
+  selectedEventsRef: MutableRefObject<Array<unknown>>
+}
+
+function findDistance(
+  resources: Array<GanttResource<object>>,
+  initialResource: string,
+  targetResource: string,
+  currentResource: string,
+): string {
+  const initialResourceIdx = resources.findIndex(el => el.id === initialResource)
+  const eventResourceIdx = resources.findIndex(el => el.id === targetResource)
+  const idxDiff = -(initialResourceIdx - eventResourceIdx)
+  const dragOverResourceIdx = resources.findIndex(el => el.id === currentResource)
+
+  const newIdx = Math.min(Math.max(dragOverResourceIdx + idxDiff, 0), resources.length - 1)
+
+  return resources[newIdx].id
 }
 
 export function useMoveEventDnD({
@@ -15,6 +35,9 @@ export function useMoveEventDnD({
   msPerPixel,
   dateRange,
   handleEventDrop,
+  resources,
+  dropResolutionMode,
+  selectedEventsRef,
 }: MoveEventDnDProps) {
   const [placeholders, setPlaceholders] = useState<GanttEvent<{ placeholder: boolean }>[]>([])
   const drawPlaceholder = useCallback((
@@ -56,18 +79,33 @@ export function useMoveEventDnD({
       current: { input, dropTargets },
     } = location
 
-    if (!source.data.events)
+    const {
+      events,
+      initialResource,
+    } = source.data
+
+    if (!events)
       return
 
     const drawData = []
-    for (const {
-      dragDiffX,
-      width,
-      id,
-      height,
-      resource,
-    } of source.data.events) {
+    for (const event of events) {
+      const {
+        dragDiffX,
+        width,
+        id,
+        height,
+      } = event
       const target = dropTargets.find(el => el.data.location === 'row')
+      const currentResource = target.data.id
+
+      const resource = dropResolutionMode === 'single-resource'
+        ? currentResource
+        : findDistance(
+          resources,
+          initialResource,
+          event.resource,
+          currentResource,
+        )
 
       if (!dragDiffX || !width || !target)
         return
@@ -77,18 +115,22 @@ export function useMoveEventDnD({
         width,
         id,
         height,
-        resource: target.data.id,
+        resource,
       })
     }
 
     drawPlaceholder(drawData)
-  }, [drawPlaceholder])
+  }, [drawPlaceholder, dropResolutionMode, resources])
 
   const dropHandler = useCallback(({ source, location }) => {
     const {
       current: { dropTargets, input },
     } = location
-    const events = source.data.events
+
+    const {
+      events,
+      initialResource,
+    } = source.data
     if (!events)
       return
 
@@ -98,6 +140,16 @@ export function useMoveEventDnD({
 
       if (!dragDiffX || !width || !target)
         return
+
+      const currentResource = target.data.id
+      const resource = dropResolutionMode === 'single-resource'
+        ? currentResource
+        : findDistance(
+          resources,
+          initialResource,
+          event.resource,
+          currentResource,
+        )
 
       const roundValue
         = Math.round(
@@ -116,13 +168,23 @@ export function useMoveEventDnD({
           + roundValue
           * (gridLayout ? threeshold : msPerPixel)
           + width * msPerPixel,
-        resource: target.data.id,
+        resource,
       })
     }
 
+    selectedEventsRef.current = updatedEvents
     setPlaceholders([])
     handleEventDrop(updatedEvents)
-  }, [dateRange, gridLayout, threeshold, msPerPixel, handleEventDrop])
+  }, [
+    dateRange,
+    gridLayout,
+    threeshold,
+    msPerPixel,
+    handleEventDrop,
+    resources,
+    dropResolutionMode,
+    selectedEventsRef,
+  ])
 
   return {
     dragHandler,
