@@ -1,15 +1,16 @@
-import React, { useEffect, useRef } from 'react'
-import { createRoot } from 'react-dom/client'
-
-import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
-import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
-import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
-
 import type { ReactEventHandler } from 'react'
 
-import { ResizeableEvent } from './ResizeableEvent'
+import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
+import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
+import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
+
+import React, { useEffect, useRef } from 'react'
+
+import { createRoot } from 'react-dom/client'
+
 import { getEventType } from './defaults'
+import { ResizeableEvent } from './ResizeableEvent'
 
 /**
  * Anything rendered inside of gantt should be movable within it
@@ -43,7 +44,6 @@ function GanttElementWrapper(props: {
     getDragPreview,
     setDragging,
     draggedElements,
-    recalcRow,
   } = props
 
   const ref = useRef<HTMLDivElement>(null)
@@ -79,14 +79,17 @@ function GanttElementWrapper(props: {
             startDate: data.startDate,
             endDate: data.endDate,
             id,
-            rowId: data.resource,
+            resource: data.resource,
             width: event.getBoundingClientRect().width,
             height: event.getBoundingClientRect().height,
             dragDiffX,
             type: getEventType(),
           })
         }
-        return { events: out }
+        return {
+          events: out,
+          reason: 'drag-event',
+        }
       },
       getInitialDataForExternal: (e) => {
         const dragDiffX = e.input.clientX - e.element.getBoundingClientRect().x
@@ -105,7 +108,6 @@ function GanttElementWrapper(props: {
         }
       },
       onDragStart() {
-        setDragging(true)
         const out = []
         const dragged = []
         for (const { id } of selectedEventsRef.current) {
@@ -159,7 +161,19 @@ function GanttElementWrapper(props: {
         }
       },
     })
-  }, [endDate, startDate, tickWidthPixels])
+  }, [
+    endDate,
+    startDate,
+    tickWidthPixels,
+    EventSlot,
+    dateRange,
+    draggedElements,
+    event,
+    ganttRef,
+    getDragPreview,
+    rowId,
+    selectedEventsRef,
+  ])
 
   return (
     <div
@@ -168,7 +182,7 @@ function GanttElementWrapper(props: {
       data-event-placeholder-id={placeholder ? id : undefined}
       className="gantt-event"
       ref={ref}
-      onPointerDown={selected ? () => {} : onClick}
+      onPointerDown={selected ? () => { } : onClick}
       style={{
         height: gridLayout ? 'fit-content' : '100%',
         position: gridLayout ? 'relative' : 'absolute',
@@ -179,16 +193,15 @@ function GanttElementWrapper(props: {
                 1,
               ),
               gridColumnEnd:
-                (endDate - dateRange[0]) / schedulingThreeshold + 1,
+              (endDate - dateRange[0]) / schedulingThreeshold + 1,
               gridRowStart: level + 1,
               gridRowEnd: level + 2,
             }
           : {
               maxHeight: `${eventHeight}px`,
               left: `${(startDate - dateRange[0]) / tickWidthPixels}px`,
-              width: `${
-                (endDate - dateRange[0] - (startDate - dateRange[0]))
-                / tickWidthPixels
+              width: `${(endDate - dateRange[0] - (startDate - dateRange[0]))
+              / tickWidthPixels
               }px`,
               top: `${Math.max(level * (eventHeight + 8)) + 8}px`,
             }),
@@ -203,7 +216,6 @@ function GanttElementWrapper(props: {
         id={id}
         dateRange={dateRange}
         updateEvent={updateEvent}
-        recalcRow={recalcRow}
         ganttRef={ganttRef}
       >
         <EventSlot
