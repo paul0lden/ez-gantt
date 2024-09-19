@@ -1,4 +1,5 @@
 import type { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
+import { useCallback } from 'react'
 
 interface ProposedWidthProps {
   location: DragLocationHistory
@@ -62,7 +63,7 @@ export function useResizeEventDnD({
   threeshold,
   updateEvent,
 }) {
-  const dragHandler = ({ location, direction, event }) => {
+  const dragHandler = useCallback(({ location, direction, event }) => {
     const { startDate, endDate } = getProposedWidth({
       location,
       direction,
@@ -80,8 +81,8 @@ export function useResizeEventDnD({
       startDate,
       endDate,
     })
-  }
-  const dropHanlder = ({ location, direction, event }) => {
+  }, [dateRange, msPerPixel, threeshold, updateEvent])
+  const dropHanlder = useCallback(({ location, direction, event }) => {
     const { startDate, endDate } = getProposedWidth({
       location,
       direction,
@@ -91,7 +92,7 @@ export function useResizeEventDnD({
       threeshold,
     })
     updateEvent({ ...event, startDate, endDate })
-  }
+  }, [dateRange, msPerPixel, threeshold, updateEvent])
 
   return { dropHanlder, dragHandler }
 }
