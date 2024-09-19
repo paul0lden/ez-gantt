@@ -55,6 +55,7 @@ interface GanttProps<EventT, ResourceT> {
   dropResolutionMode: 'as-selected' | 'single-resource'
   updateEvent: () => any
   resourceColumnDefaultWidth: number
+  getDragPreview: () => any
 }
 
 interface TimeRangeProps<EventT, ResourceT> {

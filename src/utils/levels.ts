@@ -16,6 +16,12 @@ export function checkLevel(
     }
     let hasSpace = true
     for (const event of eventsByLevel[level]) {
+      if (typeof event.startDate !== 'number') {
+        throw new TypeError(`Expected number for event.startDate but got ${typeof event.startDate}`)
+      }
+      if (typeof event.endDate !== 'number') {
+        throw new TypeError(`Expected number for event.endDate but got ${typeof event.endDate}`)
+      }
       if (
         (event.startDate < entry.endDate
         && entry.startDate < event.endDate)

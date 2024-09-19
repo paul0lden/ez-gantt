@@ -11,6 +11,7 @@ import { createRoot } from 'react-dom/client'
 
 import { getEventType } from './defaults'
 import { ResizeableEvent } from './ResizeableEvent'
+import { DragData, dragDataKey } from './utils/dragData'
 
 /**
  * Anything rendered inside of gantt should be movable within it
@@ -57,7 +58,7 @@ function GanttElementWrapper(props: {
 
     return draggable({
       element,
-      getInitialData: ({ input, element }) => {
+      getInitialData: ({ input }): DragData => {
         const out = []
 
         const initialResource = event.resource
@@ -82,6 +83,7 @@ function GanttElementWrapper(props: {
           })
         }
         return {
+          [dragDataKey]: true,
           events: out,
           reason: 'drag-event',
           initialResource,

@@ -1,4 +1,5 @@
-import type { DragLocationHistory } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
+import type { BaseEventPayload, DragLocationHistory, ElementDragType } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
+import type { GanttEvent } from '../types'
 import { useCallback } from 'react'
 
 interface ProposedWidthProps {
@@ -30,8 +31,8 @@ function getProposedWidth({
       = dateRange[0]
       + Math.round(
         (location.current.input.clientX
-        - timeRange.getBoundingClientRect().x)
-        / (threeshold / msPerPixel),
+          - timeRange.getBoundingClientRect().x)
+          / (threeshold / msPerPixel),
       )
       * threeshold
     const date2 = event.endDate
@@ -45,8 +46,8 @@ function getProposedWidth({
       = dateRange[0]
       + Math.round(
         (location.current.input.clientX
-        - timeRange.getBoundingClientRect().x)
-        / (threeshold / msPerPixel),
+          - timeRange.getBoundingClientRect().x)
+          / (threeshold / msPerPixel),
       )
       * threeshold
     const date2 = event.startDate
@@ -57,13 +58,21 @@ function getProposedWidth({
   }
 }
 
+interface ResizeEventDnDProps {
+  dateRange: [number, number]
+  msPerPixel: number
+  threeshold: number
+  updateEvent: (event: GanttEvent<object>) => void
+}
+
 export function useResizeEventDnD({
   dateRange,
   msPerPixel,
   threeshold,
   updateEvent,
-}) {
-  const dragHandler = useCallback(({ location, direction, event }) => {
+}: ResizeEventDnDProps) {
+  const dragHandler = useCallback(({ location, source }: BaseEventPayload<ElementDragType>) => {
+    const { direction, event } = source.data
     const { startDate, endDate } = getProposedWidth({
       location,
       direction,
@@ -82,7 +91,8 @@ export function useResizeEventDnD({
       endDate,
     })
   }, [dateRange, msPerPixel, threeshold, updateEvent])
-  const dropHanlder = useCallback(({ location, direction, event }) => {
+  const dropHanlder = useCallback(({ location, source }: BaseEventPayload<ElementDragType>) => {
+    const { direction, event } = source.data
     const { startDate, endDate } = getProposedWidth({
       location,
       direction,
