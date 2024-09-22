@@ -8,11 +8,12 @@ import React, { useEffect, useRef } from 'react'
 import { getEventType } from './defaults'
 
 import { debounce, debounceRAF } from './utils/debounce'
+import { dragTargetDataKey } from './utils/dragData'
 import { getEventsByLevel } from './utils/levels'
 
 function TimeRangeRow<EventT, ResourceT>(
   props: TimeRangeProps<EventT, ResourceT>,
-) {
+): React.ReactNode {
   const {
     resource,
     dateRange: [startDate],
@@ -60,6 +61,7 @@ function TimeRangeRow<EventT, ResourceT>(
         element,
         getData({ element }) {
           return {
+            [dragTargetDataKey]: true,
             x: element.getBoundingClientRect().x,
             location: 'row',
             ...resource,
@@ -104,6 +106,7 @@ function TimeRangeRow<EventT, ResourceT>(
         element,
         getData({ element }) {
           return {
+            [dragTargetDataKey]: true,
             x: element.getBoundingClientRect().x,
             location: 'row',
             ...resource,

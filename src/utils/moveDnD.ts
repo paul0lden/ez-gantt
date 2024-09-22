@@ -2,7 +2,7 @@ import type { BaseEventPayload, ElementDragType } from '@atlaskit/pragmatic-drag
 import type { MutableRefObject } from 'react'
 import type { GanttEvent, GanttProps, GanttResource } from '../types'
 import { useCallback, useState } from 'react'
-import { isDragEventData } from './dragData'
+import { isDragEventData, isDragTargetData } from './dragData'
 
 interface MoveEventDnDProps {
   gridLayout: boolean
@@ -31,6 +31,8 @@ export function findDistance(
   return resources[newIdx].id
 }
 
+type Placeholder = GanttEvent<{ placeholder: boolean }>
+
 export function useMoveEventDnD({
   gridLayout,
   threeshold,
@@ -40,8 +42,12 @@ export function useMoveEventDnD({
   resources,
   dropResolutionMode,
   selectedEventsRef,
-}: MoveEventDnDProps) {
-  const [placeholders, setPlaceholders] = useState<GanttEvent<{ placeholder: boolean }>[]>([])
+}: MoveEventDnDProps): {
+    dragHandler: (context: BaseEventPayload<ElementDragType>) => void
+    dropHandler: (context: BaseEventPayload<ElementDragType>) => void
+    placeholders: Placeholder[]
+  } {
+  const [placeholders, setPlaceholders] = useState<Placeholder[]>([])
   const drawPlaceholder = useCallback((
     events: {
       rowRelativeX: number
@@ -76,7 +82,12 @@ export function useMoveEventDnD({
     setPlaceholders(out)
   }, [msPerPixel, dateRange, threeshold, gridLayout, setPlaceholders])
 
-  const dragHandler = useCallback(({ source, location }) => {
+  const dragHandler = useCallback(({ source, location }: BaseEventPayload<ElementDragType>) => {
+    const data = source.data
+
+    if (!isDragEventData(data))
+      return
+
     const {
       current: { input, dropTargets },
     } = location
@@ -84,7 +95,7 @@ export function useMoveEventDnD({
     const {
       events,
       initialResource,
-    } = source.data
+    } = data
 
     if (!events)
       return
@@ -98,22 +109,30 @@ export function useMoveEventDnD({
         height,
       } = event
       const target = dropTargets.find(el => el.data.location === 'row')
-      const currentResource = target.data.id
+
+      if (!target)
+        return
+      const targetData = target.data
+
+      if (!isDragTargetData(targetData))
+        return
+
+      const currentResource = targetData.id
 
       const resource = dropResolutionMode === 'single-resource'
-        ? currentResource
+        ? currentResource as string
         : findDistance(
           resources,
           initialResource,
           event.resource,
-          currentResource,
+          currentResource as string,
         )
 
       if (!dragDiffX || !width || !target)
         return
 
       drawData.push({
-        rowRelativeX: input.clientX - target.data.x - dragDiffX,
+        rowRelativeX: input.clientX - targetData.x - dragDiffX,
         width,
         id,
         height,
@@ -147,20 +166,26 @@ export function useMoveEventDnD({
 
       if (!dragDiffX || !width || !target)
         return
+      if (!target)
+        return
+      const targetData = target.data
+
+      if (!isDragTargetData(targetData))
+        return
 
       const currentResource = target.data.id
       const resource = dropResolutionMode === 'single-resource'
-        ? currentResource
+        ? currentResource as string
         : findDistance(
           resources,
           initialResource,
           event.resource,
-          currentResource,
+          currentResource as string,
         )
 
       const roundValue
         = Math.round(
-          (input.clientX - target.data.x - dragDiffX)
+          (input.clientX - targetData.x - dragDiffX)
           / (threeshold / msPerPixel),
         ) * (gridLayout ? 1 : threeshold / msPerPixel)
 

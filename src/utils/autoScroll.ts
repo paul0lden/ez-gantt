@@ -1,5 +1,5 @@
-import { useRef } from 'react'
 import type { RefObject } from 'react'
+import { useRef } from 'react'
 import { resizeDOMRect } from './resizeDOMRect'
 
 interface autoScrollProps {
@@ -20,10 +20,13 @@ export function useAutoScroll({
   scrollSpeed = 20,
   edgeThreshold = 20,
   callback,
-}: autoScrollProps) {
+}: autoScrollProps): {
+    startAutoScroll: () => void
+    stopAutoScroll: () => void
+  } {
   const scrollInterval = useRef<number | null>(null)
 
-  function autoScroll() {
+  function autoScroll(): void {
     const container = gantt.current
     if (
       !container
@@ -83,12 +86,12 @@ export function useAutoScroll({
 
     scrollInterval.current = requestAnimationFrame(autoScroll)
   }
-  const startAutoScroll = () => {
+  const startAutoScroll = (): void => {
     if (!scrollInterval.current) {
       scrollInterval.current = requestAnimationFrame(autoScroll)
     }
   }
-  const stopAutoScroll = () => {
+  const stopAutoScroll = (): void => {
     if (scrollInterval.current) {
       cancelAnimationFrame(scrollInterval.current)
       scrollInterval.current = null

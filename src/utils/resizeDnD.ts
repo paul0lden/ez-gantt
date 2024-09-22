@@ -1,6 +1,7 @@
 import type { BaseEventPayload, DragLocationHistory, ElementDragType } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
-import type { GanttEvent } from '../types'
+import type { DateRangeValue, GanttEvent } from '../types'
 import { useCallback } from 'react'
+import { isResizeEventData } from './resizeDdata'
 
 interface ProposedWidthProps {
   location: DragLocationHistory
@@ -18,7 +19,7 @@ function getProposedWidth({
   threeshold,
   msPerPixel,
   event,
-}: ProposedWidthProps) {
+}: ProposedWidthProps): DateRangeValue {
   const timeRange = document.querySelector(
     `[data-timerange="${event.resource}"]`,
   )
@@ -70,9 +71,18 @@ export function useResizeEventDnD({
   msPerPixel,
   threeshold,
   updateEvent,
-}: ResizeEventDnDProps) {
+}: ResizeEventDnDProps): {
+    dropHanlder: (context: BaseEventPayload<ElementDragType>) => void
+    dragHandler: (context: BaseEventPayload<ElementDragType>) => void
+  } {
   const dragHandler = useCallback(({ location, source }: BaseEventPayload<ElementDragType>) => {
-    const { direction, event } = source.data
+    const data = source.data
+
+    if (!isResizeEventData(data))
+      return
+
+    const { direction, event } = data
+
     const { startDate, endDate } = getProposedWidth({
       location,
       direction,
@@ -92,7 +102,12 @@ export function useResizeEventDnD({
     })
   }, [dateRange, msPerPixel, threeshold, updateEvent])
   const dropHanlder = useCallback(({ location, source }: BaseEventPayload<ElementDragType>) => {
-    const { direction, event } = source.data
+    const data = source.data
+
+    if (!isResizeEventData(data))
+      return
+
+    const { direction, event } = data
     const { startDate, endDate } = getProposedWidth({
       location,
       direction,
