@@ -1,5 +1,5 @@
 import type React from 'react'
-import type { ReactElement, ReactNode } from 'react'
+import { MutableRefObject } from 'react'
 
 interface DateRangeValue {
   startDate: number
@@ -32,14 +32,15 @@ interface GanttSlotsProps<EventT, ResourceT> {
 }
 
 type GanttSlots<EventT, ResourceT> = {
-  [Property in keyof GanttSlotsProps<EventT, ResourceT>]: () => ReactElement<
+  [Property in keyof GanttSlotsProps<EventT, ResourceT>]:
+  () => React.ReactElement<
     GanttSlotsProps<EventT, ResourceT>[Property]
   >;
 }
 
 interface DateViewLevel {
   getNextTimestamp: (prev: number) => number
-  getLabel: (date: Date) => ReactNode
+  getLabel: (date: Date) => React.ReactNode
   color?: string
   width?: number
 }
@@ -64,25 +65,44 @@ interface GanttProps<EventT, ResourceT> {
 }
 
 interface TimeRangeProps<EventT, ResourceT> {
-  setSelectedEvents: (newState: string[] | ((prev: string[]) => string[])) => void
   schedulingThreeshold: number
   events: GanttEvent<EventT>[]
   resource: GanttResource<ResourceT>
   dateRange: [number, number]
-  tickWidthPixels: number
-  handleEventDrop: (
-    event: GanttEvent<EventT>,
-    resource: GanttResource<ResourceT>
-  ) => void
+  msPerPixel: number
   resizeRow: (arg0: any) => any
-  Placeholder: React.ReactElement
-  EventSlot: React.ReactElement
-  placeholderProps: any
-  eventProps: any
+  gridLayout: boolean
+  width: number
+  children: (arg0: {
+    eventsByLevel: Array<Array<
+      GanttEvent<EventT> & { placeholder?: boolean }
+    >>
+  }) => React.ReactNode
+}
+
+interface ElementWrapperProps<EventT> {
+  event: GanttEvent<EventT>
+  onClick: React.PointerEventHandler
+  ganttRef: React.RefObject<HTMLDivElement>
+  schedulingThreeshold: number
+  msPerPixel: number
+  level: number
+  dateRange: [number, number]
+  EventSlot: React.FunctionComponent<any>
+  placeholder: boolean
+  updateEvent: (event) => void
+  selected: boolean
+  gridLayout: boolean
+  selectedEventsRef: React.MutableRefObject<any>
+  getDragPreview: any
+  draggedElements: any
+  eventHeight: number
+
 }
 
 export type {
   DateRangeValue,
+  ElementWrapperProps,
   GanttEvent,
   GanttProps,
   GanttResource,

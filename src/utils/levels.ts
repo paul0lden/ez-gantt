@@ -7,7 +7,7 @@ interface Event {
 export function checkLevel(
   entry: Event,
   eventsByLevel: Array<Array<Event>>,
-) {
+): number {
   let level = 0
 
   while (true) {
@@ -24,7 +24,7 @@ export function checkLevel(
       }
       if (
         (event.startDate < entry.endDate
-        && entry.startDate < event.endDate)
+          && entry.startDate < event.endDate)
       ) {
         hasSpace = false
       }
@@ -38,7 +38,7 @@ export function checkLevel(
 export function getEventsByLevel(
   events: Event[],
   sortFn: (a: Event, b: Event) => number = (a, b) => a.startDate - b.startDate,
-) {
+): Array<Array<Event>> {
   const eventsByLevel: Array<typeof events> = []
 
   for (const event of events.sort(sortFn)) {

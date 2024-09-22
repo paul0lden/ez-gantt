@@ -427,58 +427,58 @@ export function Gantt<EventT, ResourceT>(
           >
             {resources.map((resource) => {
               const selection = resourceSelectionMap[resource.id]
-              const list
-                = ({ eventsByLevel, recalcRow }) => {
-                  return eventsByLevel.map((level, i) =>
-                    level.map((event) => {
-                      return (
-                        <GanttElementWrapper
-                          {...event}
-                          placeholder={event.placeholder}
-                          event={event}
-                          recalcRow={recalcRow}
-                          ganttRef={ganttScrollContainer}
-                          onClick={handleEventClick}
-                          EventSlot={event.placeholder ? Placeholder : Event}
-                          selected={selection?.includes(
-                            event,
-                          )}
-                          dateRange={dateRange}
-                          level={i}
-                          rowId={resource.id}
-                          eventHeight={45}
-                          tickWidthPixels={msPerPixel}
-                          key={
-                            event.placeholder
-                              ? `${event.id}-placeholder`
-                              : event.id
-                          }
-                          schedulingThreeshold={schedulingThreeshold}
-                          updateEvent={updateEvent}
-                          gridLayout={gridLayout}
-                          selectedEventsRef={selectedEventsRef}
-                          draggedElements={draggedElements}
-                          getDragPreview={getDragPreview}
-                        />
-                      )
-                    }),
-                  )
-                }
 
               return (
                 <TimeRangeRow
-                  Placeholder={Placeholder}
+                  <EventT, ResourceT>
                   dateRange={dateRange}
                   resource={resource}
                   events={resourceEventsMap[resource.id]}
-                  tickWidthPixels={msPerPixel}
+                  msPerPixel={msPerPixel}
                   width={ganttWidth}
                   key={resource.id}
                   resizeRow={resizeRow}
                   schedulingThreeshold={schedulingThreeshold}
                   gridLayout={gridLayout}
                 >
-                  {list}
+                  {({ eventsByLevel }) => {
+                    return eventsByLevel.map((level, i) =>
+                      level.map((event) => {
+                        return (
+                          <GanttElementWrapper
+                            <EventT>
+                            {...event}
+                            placeholder={!!event.placeholder}
+                            event={event}
+                            ganttRef={ganttScrollContainer}
+                            onClick={handleEventClick}
+                            EventSlot={
+                              event.placeholder ? Placeholder : Event
+                            }
+                            selected={selection?.includes(
+                              event,
+                            )}
+                            dateRange={dateRange}
+                            level={i}
+                            rowId={resource.id}
+                            eventHeight={45}
+                            msPerPixel={msPerPixel}
+                            key={
+                              event.placeholder
+                                ? `${event.id}-placeholder`
+                                : event.id
+                            }
+                            schedulingThreeshold={schedulingThreeshold}
+                            updateEvent={updateEvent}
+                            gridLayout={gridLayout}
+                            selectedEventsRef={selectedEventsRef}
+                            draggedElements={draggedElements}
+                            getDragPreview={getDragPreview}
+                          />
+                        )
+                      }),
+                    )
+                  }}
                 </TimeRangeRow>
               )
             })}
