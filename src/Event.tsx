@@ -1,28 +1,21 @@
-import type { ReactEventHandler } from 'react'
-
+import type { ElementWrapperProps } from './types'
 import type { DragData } from './utils/dragData'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
+
 import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
 
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
 
 import React, { useEffect, useRef } from 'react'
-
 import { createRoot } from 'react-dom/client'
 import { getEventType } from './defaults'
 import { ResizeableEvent } from './ResizeableEvent'
 import { dragDataKey } from './utils/dragData'
 
-/**
- * Anything rendered inside of gantt should be movable within it
- * and the position should be calculated for it
- * Everything else belongs to the element logic itself (like rersizing)
- *
- */
-function GanttElementWrapper(props: {
-  onClick: ReactEventHandler<PointerEvent>
-}): React.ReactNode {
+function GanttElementWrapper<EventT>(
+  props: ElementWrapperProps<EventT>,
+): React.ReactNode {
   const {
     onClick,
     event,
@@ -30,23 +23,20 @@ function GanttElementWrapper(props: {
     schedulingThreeshold,
     EventSlot,
     eventProps,
-    startDate,
-    endDate,
     dateRange,
     level,
     eventHeight,
-    tickWidthPixels,
-    id,
+    msPerPixel,
     placeholder,
-    rowId,
     updateEvent,
     selected,
     gridLayout,
     selectedEventsRef,
     getDragPreview,
-    setDragging,
     draggedElements,
   } = props
+
+  const { id, startDate, endDate, resource } = event
 
   const ref = useRef<HTMLDivElement>(null)
   const events = useRef<HTMLElement[]>([])
@@ -59,7 +49,7 @@ function GanttElementWrapper(props: {
 
     return draggable({
       element,
-      getInitialData: ({ input }): DragData => {
+      getInitialData: ({ input }): DragData | Record<string, unknown> => {
         const out = []
 
         const initialResource = event.resource
@@ -67,9 +57,11 @@ function GanttElementWrapper(props: {
         for (const data of selectedEventsRef.current) {
           const { id } = data
 
-          const eventElement = ganttRef.current.querySelector(
+          const eventElement = ganttRef.current?.querySelector(
             `[data-event-id="${id}"]`,
           ) as HTMLElement
+          if (!eventElement)
+            return {}
           const dragDiffX = input.clientX - eventElement.getBoundingClientRect().x
 
           out.push({
@@ -102,7 +94,7 @@ function GanttElementWrapper(props: {
             ],
           })]: JSON.stringify({
             ...event,
-            rowId,
+            resource,
           }),
         }
       },
@@ -110,7 +102,7 @@ function GanttElementWrapper(props: {
         const out = []
         const dragged = []
         for (const { id } of selectedEventsRef.current) {
-          const event = ganttRef.current.querySelector(
+          const event = ganttRef.current?.querySelector(
             `[data-event-id="${id}"]`,
           ) as HTMLElement
           if (!event)
@@ -150,7 +142,7 @@ function GanttElementWrapper(props: {
                     events: selectedEventsRef.current,
                     EventSlot,
                     dateRange,
-                    tickWidthPixels,
+                    tickWidthPixels: msPerPixel,
                   })}
                 </div>,
               )
@@ -163,14 +155,14 @@ function GanttElementWrapper(props: {
   }, [
     endDate,
     startDate,
-    tickWidthPixels,
+    msPerPixel,
     EventSlot,
     dateRange,
     draggedElements,
     event,
     ganttRef,
     getDragPreview,
-    rowId,
+    resource,
     selectedEventsRef,
   ])
 
@@ -198,9 +190,9 @@ function GanttElementWrapper(props: {
             }
           : {
               maxHeight: `${eventHeight}px`,
-              left: `${(startDate - dateRange[0]) / tickWidthPixels}px`,
+              left: `${(startDate - dateRange[0]) / msPerPixel}px`,
               width: `${(endDate - dateRange[0] - (startDate - dateRange[0]))
-              / tickWidthPixels
+              / msPerPixel
               }px`,
               top: `${Math.max(level * (eventHeight + 8)) + 8}px`,
             }),
@@ -211,7 +203,7 @@ function GanttElementWrapper(props: {
         startDate={startDate}
         endDate={endDate}
         event={event}
-        tickWidthPixels={tickWidthPixels}
+        tickWidthPixels={msPerPixel}
         id={id}
         dateRange={dateRange}
         updateEvent={updateEvent}
@@ -226,7 +218,7 @@ function GanttElementWrapper(props: {
           event={event}
           updateEvent={updateEvent}
           eventHeight={eventHeight}
-          tickWidthPixels={tickWidthPixels}
+          tickWidthPixels={msPerPixel}
           selected={selected}
           schedulingThreeshold={schedulingThreeshold}
           {...eventProps}
@@ -236,4 +228,4 @@ function GanttElementWrapper(props: {
   )
 }
 
-export default React.memo(GanttElementWrapper)
+export default React.memo(GanttElementWrapper) as typeof GanttElementWrapper

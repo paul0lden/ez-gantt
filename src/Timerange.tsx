@@ -11,13 +11,11 @@ import { debounce, debounceRAF } from './utils/debounce'
 import { dragTargetDataKey } from './utils/dragData'
 import { getEventsByLevel } from './utils/levels'
 
-function TimeRangeRow<EventT, ResourceT>(
-  props: TimeRangeProps<EventT, ResourceT>,
-): React.ReactNode {
+function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT>): React.ReactNode {
   const {
     resource,
     dateRange: [startDate],
-    tickWidthPixels,
+    msPerPixel,
     resizeRow,
     width,
     schedulingThreeshold,
@@ -91,12 +89,6 @@ function TimeRangeRow<EventT, ResourceT>(
             const data: { x?: number } = target.data
             if (!data.x)
               return
-
-            // drawPlaceholder({
-            //  rowRelativeX: input.clientX - diffX - data.x,
-            //  width,
-            //  height,
-            // })
           }
         }, 100),
         onDrop: debounceRAF(() => {
@@ -114,7 +106,7 @@ function TimeRangeRow<EventT, ResourceT>(
         },
       }),
     )
-  }, [tickWidthPixels, startDate, resource])
+  }, [msPerPixel, startDate, resource])
 
   return (
     <div
@@ -124,8 +116,8 @@ function TimeRangeRow<EventT, ResourceT>(
         display: gridLayout ? 'grid' : 'flex',
         ...(gridLayout
           ? {
-              gridTemplateColumns: `repeat(${width / (schedulingThreeshold / tickWidthPixels)
-              }, ${schedulingThreeshold / tickWidthPixels}px)`,
+              gridTemplateColumns: `repeat(${width / (schedulingThreeshold / msPerPixel)
+              }, ${schedulingThreeshold / msPerPixel}px)`,
             }
           : {
               height: `${Math.max(
@@ -147,4 +139,4 @@ function TimeRangeRow<EventT, ResourceT>(
   )
 }
 
-export default React.memo(TimeRangeRow)
+export default React.memo(TimeRangeRow) as typeof TimeRangeRow
