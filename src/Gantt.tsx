@@ -49,7 +49,9 @@ function getProposedWidth({
 /**
  * Data driven gantt chart
  */
-export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
+export function Gantt<EventT, ResourceT>(
+  props: GanttProps<EventT, ResourceT>,
+): React.ReactNode {
   const {
     msPerPixel = 30 * 1000,
     schedulingThreeshold = 30 * 60 * 1000,
@@ -90,10 +92,10 @@ export function Gantt<EventT, ResourceT>(props: GanttProps<EventT, ResourceT>) {
         = typeof selection === 'function'
           ? selection(selectedEventsRef.current.map(el => el.id))
             .map(id => events.find(event => event.id === id) ?? [])
-            .flat()
+            .flat() as Array<GanttEvent<EventT>>
           : selection
             .map(id => events.find(event => event.id === id) ?? [])
-            .flat()
+            .flat() as Array<GanttEvent<EventT>>
       setSelectedEvents(selection)
     },
     [events],

@@ -1,6 +1,11 @@
 import type React from 'react'
 import type { ReactElement, ReactNode } from 'react'
 
+interface DateRangeValue {
+  startDate: number
+  endDate: number
+}
+
 type GanttEvent<EventT> = {
   startDate: number
   endDate: number
@@ -55,7 +60,7 @@ interface GanttProps<EventT, ResourceT> {
   dropResolutionMode: 'as-selected' | 'single-resource'
   updateEvent: () => any
   resourceColumnDefaultWidth: number
-  getDragPreview: () => any
+  getDragPreview: () => void
 }
 
 interface TimeRangeProps<EventT, ResourceT> {
@@ -77,6 +82,7 @@ interface TimeRangeProps<EventT, ResourceT> {
 }
 
 export type {
+  DateRangeValue,
   GanttEvent,
   GanttProps,
   GanttResource,

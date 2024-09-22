@@ -1,4 +1,10 @@
-function drawLines(level: { diff: number }[], color: string, width: number, msPerPixel: number, limit: number) {
+function drawLines(
+  level: { diff: number }[],
+  color: string,
+  width: number,
+  msPerPixel: number,
+  limit: number,
+): string[] {
   let prevSize = 0
 
   const outSizes = []
@@ -16,7 +22,12 @@ function drawLines(level: { diff: number }[], color: string, width: number, msPe
   )
 }
 
-export function generateBackground(levels: any, limit: number, msPerPixel: number, settings: any) {
+export function generateBackground(
+  levels: Array<Array<{ diff: number }>>,
+  limit: number,
+  msPerPixel: number,
+  settings: any,
+): string {
   return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${limit}' height='100%'>${levels
     .flatMap((level, i) =>
       drawLines(
@@ -32,8 +43,12 @@ export function generateBackground(levels: any, limit: number, msPerPixel: numbe
 
 export function levelToDates(level: {
   getNextTimestamp: (prev: number) => number
-  getLabel: (date: Date) => any
-}, [startDate, endDate]: [number, number]) {
+  getLabel: (date: Date) => React.ReactNode
+}, [startDate, endDate]: [number, number]): Array<{
+    date: Date
+    getLabel: (date: Date) => React.ReactNode
+    diff: number
+  }> {
   let stamp = startDate
   const out = [stamp]
   const diffs: number[] = []

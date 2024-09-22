@@ -1,10 +1,11 @@
-import { useRef } from 'react'
 import type { Dispatch, RefObject, SetStateAction } from 'react'
+import { useRef } from 'react'
+
+import { arraysAreEqual } from './arrayEqual'
 import { useAutoScroll } from './autoScroll'
-import { resizeDOMRect } from './resizeDOMRect'
 import { debounceRAF } from './debounce'
 import { DOMGeometricSearch } from './geometricSearch'
-import { arraysAreEqual } from './arrayEqual'
+import { resizeDOMRect } from './resizeDOMRect'
 
 interface SelectionProps {
   gantt: RefObject<HTMLDivElement>
@@ -22,7 +23,10 @@ export function useSelectionUtils({
   msPerPixel,
   selectedEvents,
   setSelectedEvents,
-}: SelectionProps) {
+}: SelectionProps): {
+    selectionRectStart: React.PointerEventHandler<HTMLElement>
+    selectionRectEnd: React.PointerEventHandler<HTMLElement>
+  } {
   const initialPosition = useRef({ x: 0, y: 0 })
   const initialMousePosition = useRef({ x: 0, y: 0 })
   const selectionData = useRef({

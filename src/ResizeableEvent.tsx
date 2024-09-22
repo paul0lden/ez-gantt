@@ -1,12 +1,13 @@
-import React, { useEffect, useRef } from 'react'
+import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
-import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
+import React, { useEffect, useRef } from 'react'
 
+import { resizeDataKey } from './utils/resizeDdata'
 import './resizeable.css'
 
-export function ResizeableEvent(props) {
+export const ResizeableEvent: React.FC<object> = (props) => {
   const {
     event,
     children,
@@ -21,6 +22,7 @@ export function ResizeableEvent(props) {
       draggable({
         element: leftRef.current,
         getInitialData: () => ({
+          [resizeDataKey]: true,
           reason: 'resize-event',
           direction: 'left',
           event,
@@ -32,6 +34,7 @@ export function ResizeableEvent(props) {
       draggable({
         element: rightRef.current,
         getInitialData: () => ({
+          [resizeDataKey]: true,
           reason: 'resize-event',
           direction: 'right',
           event,

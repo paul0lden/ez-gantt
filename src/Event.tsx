@@ -1,17 +1,18 @@
 import type { ReactEventHandler } from 'react'
 
+import type { DragData } from './utils/dragData'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 import { preserveOffsetOnSource } from '@atlaskit/pragmatic-drag-and-drop/element/preserve-offset-on-source'
+
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
 
 import React, { useEffect, useRef } from 'react'
 
 import { createRoot } from 'react-dom/client'
-
 import { getEventType } from './defaults'
 import { ResizeableEvent } from './ResizeableEvent'
-import { DragData, dragDataKey } from './utils/dragData'
+import { dragDataKey } from './utils/dragData'
 
 /**
  * Anything rendered inside of gantt should be movable within it
@@ -21,7 +22,7 @@ import { DragData, dragDataKey } from './utils/dragData'
  */
 function GanttElementWrapper(props: {
   onClick: ReactEventHandler<PointerEvent>
-}) {
+}): React.ReactNode {
   const {
     onClick,
     event,

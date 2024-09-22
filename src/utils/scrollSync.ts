@@ -1,6 +1,10 @@
 import { debounceRAF } from './debounce'
 
-export function syncScroll(element1: HTMLElement, element2: HTMLElement, { vertical = true, horizontal = true } = {}) {
+export function syncScroll(
+  element1: HTMLElement,
+  element2: HTMLElement,
+  { vertical = true, horizontal = true } = {},
+) {
   const scrollHandler1 = debounceRAF(() => {
     if (horizontal) {
       element2.scrollLeft = element1.scrollLeft
