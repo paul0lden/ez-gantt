@@ -1,0 +1,18 @@
+{
+  "index": {
+    "title": "My Homepage",
+    "type": "page"
+  },
+  "guide": {
+    "title": "Getting Started",
+    "type": "page"
+  },
+  "examples": {
+    "title": "Examples",
+    "type": "page"
+  },
+  "reference": {
+    "title": "API",
+    "type": "page"
+  }
+}
