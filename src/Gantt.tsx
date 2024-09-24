@@ -14,7 +14,7 @@ import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-sc
 
 import { autoScrollForExternal } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/external'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import GanttElementWrapper from './Event'
 import TimeRangeRow from './Timerange'
 import { generateBackground, levelToDates } from './utils/background'
@@ -49,7 +49,7 @@ function getProposedWidth({
 /**
  * Data driven gantt chart
  */
-export function Gantt<EventT, ResourceT>(
+function Gantt<EventT, ResourceT>(
   props: GanttProps<EventT, ResourceT>,
 ): React.ReactNode {
   const {
@@ -492,3 +492,5 @@ export function Gantt<EventT, ResourceT>(
     </div>
   )
 }
+
+export default React.memo(Gantt) as typeof Gantt
