@@ -2,6 +2,7 @@
   "name": "ez-gantt",
   "version": "0.1.2",
   "private": false,
+  "license": "MIT",
   "main": "dist/ez-gantt.cjs.js",
   "module": "dist/ez-gantt.es.js",
   "types": "dist/index.d.ts",
