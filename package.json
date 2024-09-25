@@ -3,6 +3,7 @@
   "version": "0.1.3",
   "private": false,
   "license": "MIT",
+  "repository": "github:paul0lden/ez-gantt",
   "main": "dist/ez-gantt.cjs.js",
   "module": "dist/ez-gantt.es.js",
   "types": "dist/index.d.ts",
