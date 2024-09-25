@@ -90,14 +90,14 @@ interface ElementWrapperProps<EventT> {
   dateRange: [number, number]
   EventSlot: React.FunctionComponent<any>
   placeholder: boolean
-  updateEvent: (event) => void
+  updateEvent: (event: any) => void
   selected: boolean
   gridLayout: boolean
   selectedEventsRef: React.MutableRefObject<any>
   getDragPreview: any
   draggedElements: any
   eventHeight: number
-
+  eventProps?: any
 }
 
 export type {

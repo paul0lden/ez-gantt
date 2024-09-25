@@ -59,7 +59,6 @@ function Gantt<EventT, ResourceT>(
     resources,
     dateRange,
     slots: { Placeholder, Resource, Event },
-    slotsProps: { placeholderProps, resourceProps, eventProps } = {},
     dateViewLevels,
     updateEvent,
     handleEventDrop,

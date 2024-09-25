@@ -2,23 +2,21 @@
   "name": "ez-gantt",
   "version": "0.1.0",
   "private": true,
+  "main": "dist/ez-gantt.cjs.js",
+  "module": "dist/ez-gantt.es.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
   "scripts": {
     "lint": "eslint ./src/",
     "test": "vitest run",
     "test:watch": "vitest",
-    "start": "vite",
-    "build": "vite build",
-    "serve": "vite preview"
+    "build": "vite build"
   },
   "peerDependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.2.3",
     "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "^1.4.0",
-    "react": "^18.3.1"
-  },
-  "dependencies": {
-    "@atlaskit/pragmatic-drag-and-drop": "^1.2.3",
-    "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "^1.4.0",
-    "react": "^18.3.1"
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0"
   },
   "browserslist": {
     "production": [
@@ -50,10 +48,12 @@
     "eslint-plugin-react-refresh": "^0.4.12",
     "globals": "^15.8.0",
     "jsdom": "^25.0.0",
+    "release-it": "^17.6.0",
     "resize-observer-polyfill": "^1.5.1",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.0",
     "vite": "^5.3.5",
+    "vite-plugin-dts": "^4.2.2",
     "vitest": "^2.0.5"
   }
 }

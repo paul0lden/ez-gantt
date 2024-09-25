@@ -29,7 +29,10 @@ export function useSelectionUtils({
   } {
   const initialPosition = useRef({ x: 0, y: 0 })
   const initialMousePosition = useRef({ x: 0, y: 0 })
-  const selectionData = useRef({
+  const selectionData = useRef<{
+    startResource: string | null,
+    startTimestamp: number | null,
+  }>({
     startResource: null,
     startTimestamp: null,
   })
@@ -96,7 +99,7 @@ export function useSelectionUtils({
     }
 
     selectionData.current = {
-      startResource: event.target?.getAttribute('data-resource'),
+      startResource: (event.target as HTMLElement)?.getAttribute('data-resource'),
       startTimestamp: startDate + initialPosition.current.x * msPerPixel,
     }
 

@@ -69,10 +69,10 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
           !!source.types.find(el => el.includes(getEventType())),
         onDrag: debounce(({ location, source }) => {
           const {
-            current: { input, dropTargets },
+            current: { dropTargets },
           } = location
-          const type = source.types.find(el => el.includes(getEventType()))
-          const target = dropTargets.find(el => el.data.location === 'row')
+          const type = source.types.find((el: any) => el.includes(getEventType()))
+          const target = dropTargets.find((el: any) => el.data.location === 'row')
 
           if (type && target) {
             const diffX = Number(type.split('+')?.[2])
@@ -89,6 +89,9 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
             const data: { x?: number } = target.data
             if (!data.x)
               return
+
+            // TODO: implement external drop logic
+            console.warn('external logic is not implemented')
           }
         }, 100),
         onDrop: debounceRAF(() => {
@@ -134,7 +137,7 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
       ref={rowRef}
       data-timerange={resource.id}
     >
-      {children({ eventsByLevel })}
+      {children({ eventsByLevel: eventsByLevel as any })}
     </div>
   )
 }
