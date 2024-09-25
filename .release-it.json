@@ -1,8 +1,6 @@
 {
   "hooks": {
     "before:bump": "npm test && npm run format",
-    "after:bump": "sed -i '' 's/VERSION_PLACEHOLDER/${version}/g' ./documentation/path/to/version/file",
-    "after:release": "vercel --prod --cwd ./documentation",
     "before:git:release": "echo 'Please enter a custom description for this release:' && read description && export DESCRIPTION=$description"
   },
   "git": {
