@@ -7,7 +7,7 @@ import React, { useEffect, useRef } from 'react'
 import { resizeDataKey } from './utils/resizeDdata'
 import './resizeable.css'
 
-export const ResizeableEvent: React.FC<object> = (props) => {
+export const ResizeableEvent: React.FC<any> = (props) => {
   const {
     event,
     children,

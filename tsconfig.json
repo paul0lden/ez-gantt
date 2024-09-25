@@ -1,28 +1,18 @@
 {
   "compilerOptions": {
-    "target": "es2015",
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
-    ],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "module": "esnext",
-    "moduleResolution": "node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+    "target": "ES5", // Generates source maps for easier debugging
+    "jsx": "react-jsx", // Allows using modern JS modules
+    "lib": ["dom", "esnext"], // Ensures compatibility with older browsers
+    "module": "ESNext", // Ensures compatibility with CommonJS modules
+    "moduleResolution": "node", // Output folder for built files
+    "strict": true, // DOM and ESNext libraries for React
+    "declaration": true, // Generates type declaration files (.d.ts)
+    "declarationMap": true, // Skips type-checking of libraries
+    "outDir": "dist", // Maps declarations for better debugging
+    "sourceMap": true, // JSX support
+    "esModuleInterop": true, // Node module resolution
+    "skipLibCheck": true // Enable strict type-checking options
   },
-  "include": [
-    "src",
-    "./eslint.config.mjs",
-    "./vite.config.js"
-  ]
+  "include": ["src"], // Include your source code
+  "exclude": ["node_modules", "dist"] // Exclude output and dependencies
 }
