@@ -1,6 +1,5 @@
 {
   "hooks": {
-    "before:bump": "npm test && npm run format",
     "before:git:release": "echo 'Please enter a custom description for this release:' && read description && export DESCRIPTION=$description"
   },
   "git": {
