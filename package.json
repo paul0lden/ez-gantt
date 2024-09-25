@@ -10,7 +10,10 @@
     "lint": "eslint ./src/",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "vite build"
+    "build": "vite build",
+    "release:patch": "release-it patch",
+    "release:minor": "release-it minor",
+    "release:major": "release-it major"
   },
   "peerDependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "^1.2.3",
