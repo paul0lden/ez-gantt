@@ -1,11 +1,8 @@
 {
-  "hooks": {
-    "before:git:release": "echo 'Please enter a custom description for this release:' && read description && export DESCRIPTION=$description"
-  },
   "git": {
     "commitMessage": "chore: release v${version}",
     "tagName": "v${version}",
-    "tagAnnotation": "🎉 Release v${version} - ${DESCRIPTION}\n\nRecent changes:\n${latestTagCommitLog}",
+    "tagAnnotation": "🎉 Release v${version} - ${prompt:description}\n\nRecent changes:\n${latestTagCommitLog}",
     "push": true,
     "requireCleanWorkingDir": true
   },
@@ -14,6 +11,10 @@
   },
   "github": {
     "release": true,
-    "releaseName": "v${version} - Major Updates! 🎈"
+    "releaseName": "v${version} - ${prompt:description}",
+    "releaseNotes": "auto"
+  },
+  "prompt": {
+    "description": "Please enter a custom description for this release"
   }
 }
