@@ -2,7 +2,7 @@
   "git": {
     "commitMessage": "chore: release v${version}",
     "tagName": "v${version}",
-    "tagAnnotation": "🎉 Release v${version} - ${prompt:description}\n\nRecent changes:\n${latestTagCommitLog}",
+    "tagAnnotation": "🎉 Release v${version} - \n\nRecent changes:\n${latestTagCommitLog}",
     "push": true,
     "requireCleanWorkingDir": true
   },
@@ -11,9 +11,7 @@
   },
   "github": {
     "release": true,
-    "releaseName": "v${version} - ${prompt:description}"
+    "releaseName": "v${version}"
   },
-  "prompt": {
-    "description": "Please enter a custom description for this release"
-  }
+  "prompt": true
 }
