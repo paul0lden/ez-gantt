@@ -1,11 +1,13 @@
 {
   "name": "ez-gantt",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "main": "dist/ez-gantt.cjs.js",
   "module": "dist/ez-gantt.es.js",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "lint": "eslint ./src/",
     "test": "vitest run",
