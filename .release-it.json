@@ -11,8 +11,7 @@
   },
   "github": {
     "release": true,
-    "releaseName": "v${version} - ${prompt:description}",
-    "releaseNotes": "auto"
+    "releaseName": "v${version} - ${prompt:description}"
   },
   "prompt": {
     "description": "Please enter a custom description for this release"
