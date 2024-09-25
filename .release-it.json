@@ -14,7 +14,6 @@
   },
   "github": {
     "release": true,
-    "releaseName": "v${version} - Major Updates! 🎈",
-    "releaseNotes": "auto"
+    "releaseName": "v${version} - Major Updates! 🎈"
   }
 }
