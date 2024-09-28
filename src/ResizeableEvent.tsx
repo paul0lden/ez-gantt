@@ -4,7 +4,6 @@ import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { disableNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/disable-native-drag-preview'
 import React, { useEffect, useRef } from 'react'
 
-import classes from './resizeable.module.css'
 import { resizeDataKey } from './utils/resizeDdata'
 
 export const ResizeableEvent: React.FC<any> = (props) => {
@@ -51,16 +50,28 @@ export const ResizeableEvent: React.FC<any> = (props) => {
       <div
         ref={leftRef}
         data-role="resize-left"
-        className={classes['resizeable-resize']}
-        style={{ left: 0 }}
+        style={{
+          width: '12px',
+          height: '100%',
+          position: 'absolute',
+          cursor: 'ew-resize',
+          top: 0,
+          left: 0,
+        }}
         onPointerDown={e => ganttRef.current.setPointerCapture(e.pointerId)}
       />
       {children}
       <div
         ref={rightRef}
-        className={classes['resizeable-resize']}
         data-role="resize-right"
-        style={{ right: 0 }}
+        style={{
+          width: '12px',
+          height: '100%',
+          position: 'absolute',
+          cursor: 'ew-resize',
+          top: 0,
+          right: 0,
+        }}
         onPointerDown={e => ganttRef.current.setPointerCapture(e.pointerId)}
       />
     </>

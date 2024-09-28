@@ -6,7 +6,7 @@ import {
   startOfDay,
   startOfMonth,
 } from 'date-fns'
-import 'ez-gantt/dist/style.css'
+import 'ez-gantt/dist/index.css'
 import Gantt from 'ez-gantt'
 import React, { useCallback, useState } from 'react'
 import { generateGanttData } from './data'

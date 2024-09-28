@@ -10,7 +10,6 @@ import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/el
 import React, { useEffect, useRef } from 'react'
 import { createRoot } from 'react-dom/client'
 import { getEventType } from './defaults'
-import classes from './gantt.module.css'
 import { ResizeableEvent } from './ResizeableEvent'
 import { dragDataKey } from './utils/dragData'
 
@@ -172,10 +171,11 @@ function GanttElementWrapper<EventT>(
       data-role={placeholder ? 'gantt-event-placeholder' : 'gantt-event'}
       data-event-id={placeholder ? undefined : id}
       data-event-placeholder-id={placeholder ? id : undefined}
-      className={classes['gantt-event']}
       ref={ref}
       onPointerDown={selected ? () => { } : onClick}
       style={{
+        zIndex: 10,
+        cursor: 'pointer',
         height: gridLayout ? 'fit-content' : '100%',
         position: gridLayout ? 'relative' : 'absolute',
         ...(gridLayout
