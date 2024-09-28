@@ -7,9 +7,12 @@
       "dom",
       "dom.iterable",
       "esnext"
-    ], 
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
+    "paths": {
+      "@components/*": ["components/*"]
+    },
     "resolveJsonModule": true,
     "allowJs": true,
     "strict": true,

@@ -11,7 +11,9 @@ import { debounce, debounceRAF } from './utils/debounce'
 import { dragTargetDataKey } from './utils/dragData'
 import { getEventsByLevel } from './utils/levels'
 
-function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT>): React.ReactNode {
+function TimeRangeRow<EventT, ResourceT>(
+  props: TimeRangeProps<EventT, ResourceT>,
+): React.ReactNode {
   const {
     resource,
     dateRange: [startDate],
@@ -29,15 +31,14 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
   const rowRef = useRef<HTMLDivElement>(null)
 
   const eventHeight = 45
-  const resizeObserver = useRef(new ResizeObserver((entries) => {
-    for (const entry of entries) {
-      resizeRow(entry)
-    }
-  }))
 
   useEffect(() => {
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        resizeRow(entry)
+      }
+    })
     const row = rowRef.current
-    const observer = resizeObserver.current
     if (row) {
       observer.observe(row)
     }
@@ -47,7 +48,7 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
         observer.unobserve(row)
       }
     }
-  }, [resizeObserver])
+  }, [resizeRow])
   useEffect(() => {
     const element = rowRef.current
 
@@ -71,8 +72,12 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
           const {
             current: { dropTargets },
           } = location
-          const type = source.types.find((el: any) => el.includes(getEventType()))
-          const target = dropTargets.find((el: any) => el.data.location === 'row')
+          const type = source.types.find((el: any) =>
+            el.includes(getEventType()),
+          )
+          const target = dropTargets.find(
+            (el: any) => el.data.location === 'row',
+          )
 
           if (type && target) {
             const diffX = Number(type.split('+')?.[2])
@@ -94,8 +99,7 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
             console.warn('external logic is not implemented')
           }
         }, 100),
-        onDrop: debounceRAF(() => {
-        }),
+        onDrop: debounceRAF(() => { }),
       }),
       dropTargetForElements({
         element,
@@ -119,20 +123,14 @@ function TimeRangeRow<EventT, ResourceT>(props: TimeRangeProps<EventT, ResourceT
         display: gridLayout ? 'grid' : 'flex',
         ...(gridLayout
           ? {
-              gridTemplateColumns: `repeat(${width / (schedulingThreeshold / msPerPixel)
+            gridTemplateColumns: `repeat(${width / (schedulingThreeshold / msPerPixel)
               }, ${schedulingThreeshold / msPerPixel}px)`,
-            }
+          }
           : {
-              height: `${Math.max(
-                eventsByLevel.length,
-              )
-              * eventHeight
-              + Math.max(
-                eventsByLevel.length - 1,
-              )
-              * 8
+            height: `${Math.max(eventsByLevel.length) * eventHeight
+              + Math.max(eventsByLevel.length - 1) * 8
               }px`,
-            }),
+          }),
       }}
       ref={rowRef}
       data-timerange={resource.id}

@@ -1,4 +1,3 @@
-import React, { useCallback, useMemo, useState } from 'react'
 import { Box } from '@mui/material'
 import {
   addDays,
@@ -8,9 +7,9 @@ import {
   startOfDay,
   startOfMonth,
 } from 'date-fns'
+import React, { useCallback, useMemo, useState } from 'react'
+import Gantt from '../src/index'
 import { getEvents, resources } from './data'
-import { Gantt } from './Gantt'
-import { ResizeableEvent } from './ResizeableEvent'
 
 function Resource({ id }) {
   return (
