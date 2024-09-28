@@ -6,17 +6,16 @@ import {
   startOfDay,
   startOfMonth,
 } from 'date-fns'
-import 'ez-gantt/dist/index.css'
 import Gantt from 'ez-gantt'
 import React, { useCallback, useState } from 'react'
 import { generateGanttData } from './data'
 
-function Resource({ id }) {
+function Resource({ id, name }) {
   return (
-    <div key={id} className="w-full flex hover:bg-gray-400">
-      <div className="py-4 resource w-full items-start border-b-2 border-solid border-green-50">
-        <div data-resource={id} className="h-8 w-max flex mx-8">
-          {id}
+    <div className="w-full flex hover:bg-gray-400">
+      <div className="py-2 resource w-full items-start border-b-2 border-solid border-gray-500">
+        <div className="w-full flex justify-center text-center">
+          <p>{name}</p>
         </div>
       </div>
     </div>
@@ -37,6 +36,7 @@ function Event(props) {
     id,
     event,
     selected,
+    resource,
     updateEvent,
     ...rest
   } = props
@@ -44,13 +44,13 @@ function Event(props) {
   return (
     <div
       {...rest}
-      className="flex bg-cyan-800 h-8 hover:outline-2 hover:outline-cyan-100 hover:outline rounded-s"
+      className="flex bg-red-800 h-fit hover:outline-2 hover:outline-cyan-100 hover:outline rounded-lg"
     >
       <div className="overflow-hidden mx-4">
         {id}
         {' '}
         -
-        {new Date(startDate).toLocaleString()}
+        {resource}
       </div>
     </div>
   )
@@ -91,18 +91,11 @@ function ExampleSimple() {
     <Gantt
       handleEventDrop={handleEventDrop}
       dateRange={dateRange}
-      msPerPixel={60 * 1000}
+      msPerPixel={30 * 1000}
       schedulingThreeshold={30 * 60 * 1000}
       events={events}
       updateEvent={updateEvent}
       dateViewLevels={[
-        {
-          getNextTimestamp: (prevRange: number) =>
-            addMonths(startOfMonth(prevRange), 1).valueOf(),
-          getLabel: (date: Date) => format(date, 'LLLL'),
-          width: 3,
-          color: 'rgba(0, 0, 0, .75)',
-        },
         {
           getNextTimestamp: (prevRange: number) =>
             addDays(prevRange, 1).valueOf(),

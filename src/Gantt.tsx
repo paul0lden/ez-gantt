@@ -31,26 +31,6 @@ import { useResizeEventDnD } from './utils/resizeDnD'
 import { syncScroll } from './utils/scrollSync'
 import { useSelectionUtils } from './utils/selection'
 
-const widths = {
-  start: 300,
-  min: 100,
-  max: 700,
-}
-
-function getProposedWidth({
-  initialWidth,
-  location,
-}: {
-  initialWidth: number
-  location: DragLocationHistory
-}): number {
-  const diffX = location.current.input.clientX - location.initial.input.clientX
-  const proposedWidth = initialWidth + diffX
-
-  // ensure we don't go below the min or above the max allowed widths
-  return Math.min(Math.max(widths.min, proposedWidth), widths.max)
-}
-
 /**
  * Data driven gantt chart
  */
@@ -63,20 +43,26 @@ function Gantt<EventT, ResourceT>(
     events,
     resources,
     dateRange,
-    slots: { Placeholder, Resource, Event },
+    slots,
     dateViewLevels,
     updateEvent,
     handleEventDrop,
     gridLayout = true,
     dropResolutionMode = 'as-selected',
     getDragPreview,
+    resourceWidth,
   } = props
+  const { Placeholder, Resource, Event } = slots ?? {}
+
+  if (!Resource || !Event) {
+    throw new Error('Requires Resource and Event slots!')
+  }
 
   const [startDate, endDate] = dateRange
 
   const [selectedEvents, setSelectedEvents] = useState<string[]>([])
   const [isResizing, setResizing] = useState(false)
-  const [initialWidth, setInitialWidth] = useState(widths.start)
+  const [initialWidth, setInitialWidth] = useState(resourceWidth?.start ?? 300)
   const [isSelecting, setSelecting] = useState(false)
 
   const wrapperRef = useRef<HTMLDivElement>(null!)
@@ -89,7 +75,24 @@ function Gantt<EventT, ResourceT>(
   const selectedEventsRef = useRef<Array<GanttEvent<EventT>>>([])
   const draggedElements = useRef<any[]>([])
   const pointerIdRef = useRef<number | null>(null)
+  const ganttWidth = (endDate - startDate) / msPerPixel
 
+  const getProposedWidth = useCallback(({
+    initialWidth,
+    location,
+  }: {
+    initialWidth: number
+    location: DragLocationHistory
+  }): number => {
+    const diffX = location.current.input.clientX - location.initial.input.clientX
+    const proposedWidth = initialWidth + diffX
+
+    // ensure we don't go below the min or above the max allowed widths
+    return Math.min(
+      Math.max(resourceWidth?.min ?? 100, proposedWidth),
+      resourceWidth?.max ?? 700,
+    )
+  }, [resourceWidth])
   const updateEventSelection = useCallback(
     (selection: React.SetStateAction<string[]>) => {
       selectedEventsRef.current
@@ -105,7 +108,6 @@ function Gantt<EventT, ResourceT>(
     [events],
   )
 
-  const ganttWidth = (endDate - startDate) / msPerPixel
   const { selectionRectEnd, selectionRectStart } = useSelectionUtils({
     gantt: ganttScrollContainer,
     selectionRect,
@@ -344,15 +346,15 @@ function Gantt<EventT, ResourceT>(
         },
       }),
     )
-  }, [initialWidth])
+  }, [initialWidth, getProposedWidth])
 
   return (
     <div
       ref={wrapperRef}
       style={
         {
-          'height': 'fit-content',
-          'displa': 'flex',
+          'height': '100%',
+          'display': 'flex',
           'flexFlow': 'column',
           'gridTemplateRows': 'auto 1fr',
           '--local-initial-width': `${initialWidth}px`,
@@ -400,28 +402,11 @@ function Gantt<EventT, ResourceT>(
                 style={{
                   display: 'grid',
                   height: '100%',
-                  gridTemplateColumns: `${level
-                    .map(
-                      ({ diff }) =>
-                        `${Math.min(ganttWidth, diff / msPerPixel)}px`,
-                    )
-                    .join(' ')}`,
+                  gridTemplateColumns: `repeat(${level.length}, ${Math.min(ganttWidth, level[0].diff / msPerPixel)}px)`,
                 }}
               >
-                {level.map(({ date, getLabel }) => (
-                  <div
-                    style={{
-                      width: '100%',
-                      height: '40px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      cursor: 'pointer',
-                    }}
-                    key={date.toISOString()}
-                  >
-                    {getLabel(date)}
-                  </div>
+                {level.map(({ date, renderCell }) => (
+                  renderCell ? renderCell(date) : null
                 ))}
               </div>
             ))}
@@ -442,15 +427,16 @@ function Gantt<EventT, ResourceT>(
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
-            overflowX: 'auto',
+            overflowX: 'scroll',
             overflowY: 'auto',
             scrollbarGutter: 'stable',
-            scrollbarWidth: 'none',
           }}
           ref={resourceScrollContainer}
         >
           {resources.map(data => (
-            <Resource key={data.id} {...data} />
+            <div data-resource={data.id} key={data.id}>
+              <Resource {...data} />
+            </div>
           ))}
         </div>
         <div
