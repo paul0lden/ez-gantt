@@ -59,8 +59,10 @@
     "resize-observer-polyfill": "^1.5.1",
     "typescript": "^5.5.4",
     "typescript-eslint": "^8.0.0",
+    "typescript-plugin-css-modules": "^5.1.0",
     "vite": "^5.3.5",
     "vite-plugin-dts": "^4.2.2",
+    "vite-plugin-lib-inject-css": "^2.1.1",
     "vitest": "^2.0.5"
   }
 }

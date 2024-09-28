@@ -6,6 +6,7 @@ import {
   startOfDay,
   startOfMonth,
 } from 'date-fns'
+import 'ez-gantt/dist/style.css'
 import Gantt from 'ez-gantt'
 import React, { useCallback, useState } from 'react'
 import { generateGanttData } from './data'
@@ -87,7 +88,7 @@ function ExampleSimple() {
   }, [])
 
   return (
-    <Gantt.EzGantt
+    <Gantt
       handleEventDrop={handleEventDrop}
       dateRange={dateRange}
       msPerPixel={60 * 1000}
@@ -118,6 +119,7 @@ function ExampleSimple() {
         },
       ]}
       resources={resources}
+      resourceColumnDefaultWidth={200}
       slots={{
         Event: MemoEvent,
         Placeholder: MemoPlaceholder,
