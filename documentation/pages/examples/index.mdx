@@ -1,7 +1,28 @@
 import ExampleSimple from "@components/gantt/simple" 
+import { CodeTabs } from "@components/codeTabs"
+import { Bleed } from 'nextra-theme-docs'
+import { Tabs } from 'nextra/components'
 
 # Examples
 
-<div className="w-1/2">
+<div className="rounded-lg shadow-lg border-solid border-2 border-stone-200 overflow-hidden ">
   <ExampleSimple />
 </div>
+
+<Tabs items={['gantt.tsx', 'resource.tsx', 'event.tsx']}>
+  <Tabs.Tab title="Gantt">
+  ```js
+  const gantt = 1
+  ```
+  </Tabs.Tab>
+  <Tabs.Tab title="Resource">
+  ```js
+  const resource = 3
+  ```
+  </Tabs.Tab>
+  <Tabs.Tab title="Event">
+  ```js
+  const event = 3
+  ```
+  </Tabs.Tab>
+</Tabs>

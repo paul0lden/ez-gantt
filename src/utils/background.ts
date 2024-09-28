@@ -43,10 +43,10 @@ export function generateBackground(
 
 export function levelToDates(level: {
   getNextTimestamp: (prev: number) => number
-  getLabel: (date: Date) => React.ReactNode
+  renderCell: (date: Date) => React.ReactNode
 }, [startDate, endDate]: [number, number]): Array<{
     date: Date
-    getLabel: (date: Date) => React.ReactNode
+    renderCell: (date: Date) => React.ReactNode
     diff: number
   }> {
   let stamp = startDate
@@ -69,7 +69,7 @@ export function levelToDates(level: {
 
   return out.map((timestamp, i) => ({
     date: new Date(timestamp),
-    getLabel: level.getLabel,
+    renderCell: level.renderCell,
     diff: diffs[i],
   }))
 }

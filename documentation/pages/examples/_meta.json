@@ -1,5 +1,14 @@
 {
   "index": "Examples",
   "simple": "Simple",
-  "complex": "Complex"
+  "tree": "Resource tree",
+  "dynamicHeihgt": "Dynamic event height",
+  "multiResourceEvents": "Multi resource events",
+  "dropAreas": "Drop areas",
+  "multiGantt": "Multi gantt interactions",
+  "eventDependencies": "Event dependencies",
+  "eventBlocks": "Event blocks",
+  "customTimeRange": "Custom time ranges",
+  "customBackground": "Custom background",
+  "uikits": "UI kits"
 }
