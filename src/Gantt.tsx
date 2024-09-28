@@ -14,9 +14,14 @@ import { autoScrollForElements } from '@atlaskit/pragmatic-drag-and-drop-auto-sc
 
 import { autoScrollForExternal } from '@atlaskit/pragmatic-drag-and-drop-auto-scroll/external'
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import GanttElementWrapper from './Event'
-import classes from './gantt.module.css'
 import TimeRangeRow from './Timerange'
 import { generateBackground, levelToDates } from './utils/background'
 
@@ -89,12 +94,12 @@ function Gantt<EventT, ResourceT>(
     (selection: React.SetStateAction<string[]>) => {
       selectedEventsRef.current
         = typeof selection === 'function'
-          ? selection(selectedEventsRef.current.map(el => el.id))
-            .map(id => events.find(event => event.id === id) ?? [])
-            .flat() as Array<GanttEvent<EventT>>
-          : selection
-            .map(id => events.find(event => event.id === id) ?? [])
-            .flat() as Array<GanttEvent<EventT>>
+          ? (selection(selectedEventsRef.current.map(el => el.id))
+              .map(id => events.find(event => event.id === id) ?? [])
+              .flat() as Array<GanttEvent<EventT>>)
+          : (selection
+              .map(id => events.find(event => event.id === id) ?? [])
+              .flat() as Array<GanttEvent<EventT>>)
       setSelectedEvents(selection)
     },
     [events],
@@ -109,20 +114,14 @@ function Gantt<EventT, ResourceT>(
     selectedEvents,
     setSelectedEvents: updateEventSelection,
   })
-  const {
-    dragHandler: resizeDragHandler,
-    dropHanlder: resizeDropHandler,
-  } = useResizeEventDnD({
-    updateEvent,
-    threeshold: schedulingThreeshold,
-    msPerPixel,
-    dateRange,
-  })
-  const {
-    dragHandler,
-    dropHandler,
-    placeholders,
-  } = useMoveEventDnD({
+  const { dragHandler: resizeDragHandler, dropHanlder: resizeDropHandler }
+    = useResizeEventDnD({
+      updateEvent,
+      threeshold: schedulingThreeshold,
+      msPerPixel,
+      dateRange,
+    })
+  const { dragHandler, dropHandler, placeholders } = useMoveEventDnD({
     gridLayout,
     dateRange,
     handleEventDrop,
@@ -255,7 +254,11 @@ function Gantt<EventT, ResourceT>(
         }),
         monitorForElements({
           onDrag: ({ source, location }) => {
-            if (location.current.dropTargets.find(el => el.data.location === 'row')) {
+            if (
+              location.current.dropTargets.find(
+                el => el.data.location === 'row',
+              )
+            ) {
               if (source.data.reason === 'resize-event') {
                 resizeDragHandler({ location, source })
               }
@@ -266,7 +269,11 @@ function Gantt<EventT, ResourceT>(
           },
           onDrop: ({ source, location }) => {
             draggedElements.current = []
-            if (location.current.dropTargets.find(el => el.data.location === 'row')) {
+            if (
+              location.current.dropTargets.find(
+                el => el.data.location === 'row',
+              )
+            ) {
               if (source.data.reason === 'resize-event') {
                 resizeDropHandler({ location, source })
               }
@@ -342,33 +349,57 @@ function Gantt<EventT, ResourceT>(
   return (
     <div
       ref={wrapperRef}
-      className={classes['gantt-wrapper']}
       style={
         {
+          'height': 'fit-content',
+          'displa': 'flex',
+          'flexFlow': 'column',
+          'gridTemplateRows': 'auto 1fr',
           '--local-initial-width': `${initialWidth}px`,
         } as CSSProperties
       }
     >
-      <div className={[classes.grid, classes['content-container']].join(' ')}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns:
+            'var(--local-resizing-width, var(--local-initial-width)) 8px auto',
+        }}
+      >
         <div></div>
         <div
           ref={headerDividerRef}
-          className={[classes.splitter, isResizing ? classes['disable-pointer'] : []]
-            .flat()
-            .join(' ')}
+          style={{
+            background: '#ebebeb',
+            cursor: 'ew-resize',
+            pointerEvents: isResizing ? 'none' : 'unset',
+          }}
         />
-        <div className={classes['gantt-header']} ref={ganttHeaderScrollContainer}>
+        <div
+          style={{
+            width: '100%',
+            transform: 'translate3d(0, 0, 0)',
+            overflowX: 'scroll',
+            overflowY: 'scroll',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}
+          ref={ganttHeaderScrollContainer}
+        >
           <div
-            className={classes['date-area']}
             style={{
+              height: '100%',
+              display: 'flex',
+              flexFlow: 'column',
               width: ganttWidth,
             }}
           >
             {dateViewLevelsRanges.map((level, i) => (
               <div
                 key={i}
-                className={[classes.grid, classes['h-full']].join(' ')}
                 style={{
+                  display: 'grid',
+                  height: '100%',
                   gridTemplateColumns: `${level
                     .map(
                       ({ diff }) =>
@@ -378,7 +409,17 @@ function Gantt<EventT, ResourceT>(
                 }}
               >
                 {level.map(({ date, getLabel }) => (
-                  <div className={classes['date-cell']} key={date.toISOString()}>
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '40px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}
+                    key={date.toISOString()}
+                  >
                     {getLabel(date)}
                   </div>
                 ))}
@@ -387,25 +428,51 @@ function Gantt<EventT, ResourceT>(
           </div>
         </div>
       </div>
-      <div className={[classes.grid, classes['overflow-auto'], classes['content-container']].join(' ')}>
-        <div className={classes['resource-wrapper']} ref={resourceScrollContainer}>
+      <div
+        style={{
+          display: 'grid',
+          overflow: 'auto',
+          gridTemplateColumns:
+            'var(--local-resizing-width, var(--local-initial-width)) 8px auto',
+        }}
+      >
+        <div
+          style={{
+            transform: 'translate3d(0, 0, 0)',
+            display: 'flex',
+            flexDirection: 'column',
+            height: '100%',
+            overflowX: 'auto',
+            overflowY: 'auto',
+            scrollbarGutter: 'stable',
+            scrollbarWidth: 'none',
+          }}
+          ref={resourceScrollContainer}
+        >
           {resources.map(data => (
             <Resource key={data.id} {...data} />
           ))}
         </div>
         <div
           ref={dividerRef}
-          className={[classes.splitter, isResizing ? classes['disable-pointer'] : []]
-            .flat()
-            .join(' ')}
+          style={{
+            background: '#ebebeb',
+            cursor: 'ew-resize',
+            pointerEvents: isResizing ? 'none' : 'unset',
+          }}
         />
         <div
           ref={ganttScrollContainer}
           data-testid="gantt"
           data-role="gantt"
-          className={[classes.gantt, isResizing ? classes['disable-pointer'] : []]
-            .flat()
-            .join(' ')}
+          style={{
+            width: '100%',
+            height: '100%',
+            overflowX: 'scroll',
+            position: 'relative',
+            userSelect: 'none',
+            pointerEvents: isResizing ? 'none' : 'unset',
+          }}
           onPointerDown={(e) => {
             pointerIdRef.current = e.pointerId
             setSelecting(true)
@@ -428,8 +495,7 @@ function Gantt<EventT, ResourceT>(
               const selection = resourceSelectionMap[resource.id]
 
               return (
-                <TimeRangeRow
-                  <EventT, ResourceT>
+                <TimeRangeRow<EventT, ResourceT>
                   dateRange={dateRange}
                   resource={resource}
                   events={resourceEventsMap[resource.id]}
@@ -444,19 +510,14 @@ function Gantt<EventT, ResourceT>(
                     return eventsByLevel.map((level, i) =>
                       level.map((event) => {
                         return (
-                          <GanttElementWrapper
-                            <EventT>
+                          <GanttElementWrapper<EventT>
                             {...event}
                             placeholder={!!event.placeholder}
                             event={event}
                             ganttRef={ganttScrollContainer}
                             onClick={handleEventClick}
-                            EventSlot={
-                              event.placeholder ? Placeholder : Event
-                            }
-                            selected={selection?.includes(
-                              event,
-                            )}
+                            EventSlot={event.placeholder ? Placeholder : Event}
+                            selected={selection?.includes(event)}
                             dateRange={dateRange}
                             level={i}
                             rowId={resource.id}
@@ -482,10 +543,19 @@ function Gantt<EventT, ResourceT>(
               )
             })}
           </div>
-          {
-            isSelecting
-            && <div className={classes['select-rect']} ref={selectionRect} />
-          }
+          {isSelecting && (
+            <div
+              style={{
+                pointerEvents: 'none',
+                opacity: 0,
+                background: 'rgba(125,125,125,0.2)',
+                boxSizing: 'content-box',
+                border: '2px solid aqua',
+                position: 'absolute',
+              }}
+              ref={selectionRect}
+            />
+          )}
         </div>
       </div>
     </div>
