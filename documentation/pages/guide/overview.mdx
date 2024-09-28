@@ -1,0 +1,77 @@
+# Overview
+
+Welcome to **ez-gantt**, a free and open-source React Gantt chart component, licensed under the **MIT License**. This lightweight and highly customizable component allows developers to easily create interactive, scalable, and visually appealing project management tools. With support for multi-window drag and drop, dynamic event height, and resize functionality, **ez-gantt** provides the flexibility needed to handle complex scheduling and resource management scenarios.
+
+### Key Features
+- **Open Source & Free**: ez-gantt is completely free to use and licensed under MIT, making it a great choice for both personal and commercial projects.
+- **Customizable Event and Resource Rendering**: Define how events, resources, and headers are displayed using customizable slots, ensuring full control over the chart's appearance and behavior.
+- **Precise Scheduling Control**: Manage scheduling thresholds, resource assignment modes, and drag-and-drop interactions to give users fine-tuned control over how tasks and resources are managed.
+- **Scalable and Zoomable Views**: Configure different zoom levels for date ranges, from detailed hourly views to broader monthly or yearly overviews.
+- **Multi-Window Drag and Drop**: ez-gantt supports multi-window drag-and-drop interactions, allowing users to seamlessly drag tasks across different windows or parts of the application.
+- **Dynamic Event Height Support**: Adjust event height dynamically based on the data or resource complexity, providing a more flexible and adaptive timeline.
+- **Event Resizing**: Enable users to resize tasks or events on the timeline, giving them intuitive control over scheduling changes directly on the chart.
+- **Grid Layout Option**: Switch between grid and timeline layouts for displaying tasks and resources, making ez-gantt adaptable for different use cases.
+- **Responsive & Interactive**: With full drag-and-drop support and custom preview options, users can interact with events and resources smoothly and intuitively.
+  
+### Multi-Event Type Model (Coming Soon)
+
+The **multi-event type model API** is currently in development. This exciting feature will allow you to render different types of date-time data on the chart, such as:
+- **No-Scheduling Areas**: Highlight sections where events cannot be scheduled, ensuring clear visual boundaries for unavailable times.
+- **Drop Areas**: Define custom drop zones for events, enabling advanced task scheduling behavior or specific resource assignment areas.
+
+This upcoming feature will add even more flexibility to ez-gantt, making it a powerful tool for complex scheduling applications.
+
+### Customizable API
+
+One of the greatest strengths of ez-gantt is its **fully customizable API**, providing granular control over every aspect of the Gantt chart:
+
+- **Slot-Based Customization**: Use the `GanttSlots` API to inject your own components into the chart for:
+  - **Custom Event Rendering**: Define how each event is visually represented, whether as tasks, milestones, or custom blocks.
+  - **Resource Rendering**: Customize how resources are displayed, ensuring the Gantt chart matches your specific UI needs.
+  - **Custom Headers**: Modify both time range and resource headers using `TimerangeHeader` and `ResourceHeader` slots to create unique timeline views.
+
+- **Flexible Event and Resource Data**: Extend the `GanttEvent` and `GanttResource` types to manage any kind of additional data needed for your application. Whether you’re working with basic tasks, milestones, or complex multi-dimensional resources, ez-gantt provides the flexibility to handle them.
+
+- **Drag-and-Drop Customization**: Fine-tune drag-and-drop behavior with custom previews and logic using `handleEventDrop` and `getDragPreview`. Control the interactions users have when moving events, rescheduling tasks, or assigning resources.
+
+- **Resizable and Adaptive Event Heights**: Dynamically adjust event heights based on the amount of data, resource complexity, or visual requirements, providing a cleaner and more organized timeline.
+
+- **Multi-Window Drag Support**: Allow users to drag events or resources across different browser windows, enhancing usability in multi-tasking or complex project management setups.
+
+- **Custom Scheduling Logic**: Define complex scheduling logic with precise control over when and how events are scheduled, using `schedulingThreeshold`, and adapt your event drop resolution modes with `single-resource` or `as-selected`.
+
+- **Time and Date Management**: Use the `DateViewLevel` interface to create custom time and date ranges, allowing for zoomable views that can range from hours to months or years. The `getLabel` method can be customized to display relevant information for each date range, along with customizable widths and colors.
+
+### Rich Example Set
+
+ez-gantt comes with a variety of **examples** showcasing different usage scenarios. These examples provide in-depth demonstrations of:
+- **Tree Resource View**: Display resources in a hierarchical tree structure, useful for managing teams, machines, or other grouped resources.
+- **Custom Event Types**: Show how different event types, such as tasks and milestones, can be represented and managed on the same timeline.
+- **Dynamic Resizing and Drag-and-Drop**: Examples include how to implement resizing, drag-and-drop interactions, and more complex scheduling behaviors.
+
+Head over to the [Examples](./examples.md) section to explore these use cases and see ez-gantt in action.
+
+### Minimal Dependencies
+
+ez-gantt is built to be lightweight and efficient, with only two dependencies:
+- **React**: The core of ez-gantt, as it is a React-based component.
+- **Atlaskit Pragmatic Drag and Drop**: This library is used to provide robust and customizable drag-and-drop functionality for managing events and resources interactively.
+
+By keeping dependencies to a minimum, ez-gantt is easy to integrate into projects without introducing unnecessary bloat, while still offering a powerful feature set.
+
+### Getting Started
+
+To get started with ez-gantt, visit our [Getting Started](./getting-started.md) guide, which walks you through installation and setup, providing the foundation for integrating ez-gantt into your project.
+
+### API Reference
+
+For detailed information on every component, prop, and method available in ez-gantt, check out the [API Reference](./api-reference.md). This section includes descriptions of how to use each API and customize the Gantt chart to suit your needs.
+
+### Customization & Extensibility
+
+Whether you're building a simple project timeline or a complex resource management tool, ez-gantt’s flexibility and rich customization options will help you build the right solution. From multi-window drag and drop to dynamic event resizing and customizable slot rendering, ez-gantt adapts to meet the demands of your project.
+
+---
+
+This version now includes the details about it being open source, MIT licensed, the upcoming multi-event type model API, support for multi-window drag and drop, dynamic event height, and resizing, along with more emphasis on the examples showcasing different use cases like tree resource views. Let me know if you need further adjustments!
+ 

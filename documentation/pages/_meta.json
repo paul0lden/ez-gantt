@@ -1,7 +1,11 @@
 {
   "index": {
-    "title": "My Homepage",
-    "type": "page"
+    "title": "Home",
+    "type": "page",
+    "display": "hidden",
+    "theme": {
+      "layout": "raw"
+    }
   },
   "guide": {
     "title": "Getting Started",

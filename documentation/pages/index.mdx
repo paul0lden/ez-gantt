@@ -1,8 +1,32 @@
-# Welcome to Nextra
- 
-Hello, world!
+import { Feature, Features } from "@components/features";
+import { ArrowRightIcon } from "@components/icons";
+import cn from "clsx";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
-| left   | center | right |
-| :----- | :----: | ----: |
-| foo    |  bar   |   baz |
-| banana | apple  |  kiwi |
+<div className="container mx-auto py-24">
+  <div className="content-container">
+    <h1 className="text-8xl leading-light font-bold bg-clip-text text-transparent inline-block bg-gradient-to-tl from-indigo-500 via-purple-500 to-purple-300">ez-gantt<br />
+    Fast and extendable Gantt chart</h1>
+
+    <section className="text-xl py-16">
+    <p className="subtitle w-3/5 ">Build dynamic project timelines with ease. Fast, customizable, and open-source - **ez-gantt** adapts to your needs, no matter the complexity.</p>
+    </section>
+
+    <div className="py-4 px-6 bg-purple-500 block w-fit h-fit align-self-end rounded-lg">
+      <Link className="text-xl font-bold text-neutral-950" href="/guide/overview">Get started <span>→</span></Link>
+    </div>
+  </div>
+
+  <div className=" py-24 features-container">
+    <div className="content-container">
+      <Features>
+        <Feature index={0} large centered id="docs-card" >
+          <h3>Full-power documentation <br className="show-on-mobile"/>in minutes</h3>
+        </Feature>
+      </Features>
+    </div>
+  </div>
+</div>

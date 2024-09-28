@@ -13,6 +13,6 @@
     "esModuleInterop": true, // Node module resolution
     "skipLibCheck": true // Enable strict type-checking options
   },
-  "include": ["src"], // Include your source code
+  "include": ["src", "tests"], // Include your source code
   "exclude": ["node_modules", "dist"] // Exclude output and dependencies
 }
