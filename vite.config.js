@@ -2,6 +2,7 @@ import path from 'node:path'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 import dts from 'vite-plugin-dts'
+import { libInjectCss } from 'vite-plugin-lib-inject-css'
 
 export default defineConfig({
   plugins: [
@@ -9,7 +10,13 @@ export default defineConfig({
     dts({ // Generate .d.ts files for TypeScript types
       insertTypesEntry: true, // Add an entry point for types
     }),
+    libInjectCss(),
   ],
+  css: {
+    modules: {
+      scopeBehaviour: 'local', // This is the default, ensures CSS modules are used
+    },
+  },
   build: {
     lib: {
       entry: path.resolve(__dirname, 'src/index.tsx'), // Entry point of your library
@@ -17,7 +24,9 @@ export default defineConfig({
       fileName: format => `ez-gantt.${format}.js`, // Output filenames
       formats: ['es', 'cjs', 'umd'], // Build in multiple formats
     },
+    cssCodeSplit: false,
     rollupOptions: {
+      preserveEntrySignatures: 'strict',
       external: [
         'react',
         'react-dom',
@@ -61,4 +70,3 @@ export default defineConfig({
     },
   },
 })
-

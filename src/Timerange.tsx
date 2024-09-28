@@ -7,6 +7,7 @@ import { dropTargetForExternal } from '@atlaskit/pragmatic-drag-and-drop/externa
 import React, { useEffect, useRef } from 'react'
 import { getEventType } from './defaults'
 
+import classes from './gantt.module.css'
 import { debounce, debounceRAF } from './utils/debounce'
 import { dragTargetDataKey } from './utils/dragData'
 import { getEventsByLevel } from './utils/levels'
@@ -117,20 +118,20 @@ function TimeRangeRow<EventT, ResourceT>(
 
   return (
     <div
-      className="timerange-row"
+      className={classes['timerange-row']}
       style={{
         minHeight: `${40}px`,
         display: gridLayout ? 'grid' : 'flex',
         ...(gridLayout
           ? {
-            gridTemplateColumns: `repeat(${width / (schedulingThreeshold / msPerPixel)
+              gridTemplateColumns: `repeat(${width / (schedulingThreeshold / msPerPixel)
               }, ${schedulingThreeshold / msPerPixel}px)`,
-          }
+            }
           : {
-            height: `${Math.max(eventsByLevel.length) * eventHeight
+              height: `${Math.max(eventsByLevel.length) * eventHeight
               + Math.max(eventsByLevel.length - 1) * 8
               }px`,
-          }),
+            }),
       }}
       ref={rowRef}
       data-timerange={resource.id}

@@ -16,15 +16,15 @@ import { autoScrollForExternal } from '@atlaskit/pragmatic-drag-and-drop-auto-sc
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import GanttElementWrapper from './Event'
+import classes from './gantt.module.css'
 import TimeRangeRow from './Timerange'
 import { generateBackground, levelToDates } from './utils/background'
+
 import { useMoveEventDnD } from './utils/moveDnD'
 
 import { useResizeEventDnD } from './utils/resizeDnD'
-
 import { syncScroll } from './utils/scrollSync'
 import { useSelectionUtils } from './utils/selection'
-import './gantt.css'
 
 const widths = {
   start: 300,
@@ -342,24 +342,24 @@ function Gantt<EventT, ResourceT>(
   return (
     <div
       ref={wrapperRef}
-      className="gantt-wrapper"
+      className={classes['gantt-wrapper']}
       style={
         {
           '--local-initial-width': `${initialWidth}px`,
         } as CSSProperties
       }
     >
-      <div className="grid content-container">
+      <div className={[classes.grid, classes['content-container']].join(' ')}>
         <div></div>
         <div
           ref={headerDividerRef}
-          className={['splitter', isResizing ? 'disable-pointer' : []]
+          className={[classes.splitter, isResizing ? classes['disable-pointer'] : []]
             .flat()
             .join(' ')}
         />
-        <div className="gantt-header" ref={ganttHeaderScrollContainer}>
+        <div className={classes['gantt-header']} ref={ganttHeaderScrollContainer}>
           <div
-            className="date-area"
+            className={classes['date-area']}
             style={{
               width: ganttWidth,
             }}
@@ -367,7 +367,7 @@ function Gantt<EventT, ResourceT>(
             {dateViewLevelsRanges.map((level, i) => (
               <div
                 key={i}
-                className="grid h-full"
+                className={[classes.grid, classes['h-full']].join(' ')}
                 style={{
                   gridTemplateColumns: `${level
                     .map(
@@ -378,7 +378,7 @@ function Gantt<EventT, ResourceT>(
                 }}
               >
                 {level.map(({ date, getLabel }) => (
-                  <div className="date-cell" key={date.toISOString()}>
+                  <div className={classes['date-cell']} key={date.toISOString()}>
                     {getLabel(date)}
                   </div>
                 ))}
@@ -387,15 +387,15 @@ function Gantt<EventT, ResourceT>(
           </div>
         </div>
       </div>
-      <div className="grid overflow-auto content-container">
-        <div className="resource-wrapper" ref={resourceScrollContainer}>
+      <div className={[classes.grid, classes['overflow-auto'], classes['content-container']].join(' ')}>
+        <div className={classes['resource-wrapper']} ref={resourceScrollContainer}>
           {resources.map(data => (
             <Resource key={data.id} {...data} />
           ))}
         </div>
         <div
           ref={dividerRef}
-          className={['splitter', isResizing ? 'disable-pointer' : []]
+          className={[classes.splitter, isResizing ? classes['disable-pointer'] : []]
             .flat()
             .join(' ')}
         />
@@ -403,7 +403,7 @@ function Gantt<EventT, ResourceT>(
           ref={ganttScrollContainer}
           data-testid="gantt"
           data-role="gantt"
-          className={['gantt', isResizing ? 'disable-pointer' : []]
+          className={[classes.gantt, isResizing ? classes['disable-pointer'] : []]
             .flat()
             .join(' ')}
           onPointerDown={(e) => {
@@ -484,7 +484,7 @@ function Gantt<EventT, ResourceT>(
           </div>
           {
             isSelecting
-            && <div className="select-rect" ref={selectionRect} />
+            && <div className={classes['select-rect']} ref={selectionRect} />
           }
         </div>
       </div>
