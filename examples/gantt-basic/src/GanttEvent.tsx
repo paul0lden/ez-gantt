@@ -42,7 +42,7 @@ function Event(props: any): React.ReactNode {
                 <div className="font-bold flex flex-col @md:flex-row gap-1 @md:gap-4">
                   <div>{format(event.startDate, 'dd MMM hh:mm aa')}</div>
                   <div className="hidden @md:">{' - '}</div>
-                  <div>{format(event.startDate, 'dd MMM hh:mm aa')}</div>
+                  <div>{format(event.endDate, 'dd MMM hh:mm aa')}</div>
                 </div>
               </div>
             </div>

@@ -2,13 +2,13 @@
   "index": "Examples",
   "simple": "Simple",
   "tree": "Resource tree",
-  "dynamicHeihgt": "Dynamic event height",
-  "multiResourceEvents": "Multi resource events",
-  "dropAreas": "Drop areas",
-  "multiGantt": "Multi gantt interactions",
-  "eventDependencies": "Event dependencies",
-  "eventBlocks": "Event blocks",
-  "customTimeRange": "Custom time ranges",
-  "customBackground": "Custom background",
-  "uikits": "UI kits"
+  "dynamic_height": "Dynamic event height",
+  "multi_resource_events": "Multi resource events",
+  "drop_areas": "Drop areas",
+  "multi_gantt": "Multi gantt interactions",
+  "event_dependencies": "Event dependencies",
+  "event_blocks": "Event blocks",
+  "custom_time_range": "Custom time ranges",
+  "UI_kits": "UI kits",
+  "recipes": "Recipes"
 }
