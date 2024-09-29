@@ -2,6 +2,8 @@ import {
   addDays,
   addHours,
   format,
+  getDate,
+  getHours,
   startOfDay,
 } from 'date-fns'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -36,8 +38,8 @@ function App(): React.ReactNode {
   }, [])
 
   return (
-    <div className="h-lvh w-full bg-stone-900 flex justify-center items-center">
-      <div className="w-3/4 h-3/4 dark:bg-gray-700 dark:text-white border-2 border-solid rounded-2xl overflow-hidden">
+    <div className="h-lvh w-full dark:bg-stone-900 flex justify-center items-center">
+      <div className="w-3/4 h-3/4 bg-zinc-100 dark:bg-zinc-700 dark:text-zinc-200 border-2 border-solid border-zinc-200 dark:border-zinc-400 rounded-2xl overflow-hidden">
         <Gantt
           handleEventDrop={handleEventDrop}
           dateRange={dateRange}
@@ -51,10 +53,17 @@ function App(): React.ReactNode {
                 addDays(prevRange, 1).valueOf(),
               renderCell: (date: Date) => (
                 <div
-                className='w-full flex'
+                  className={[
+                    'w-full',
+                    'flex',
+                    'bg-opacity-30',
+                    getDate(date) % 2 === 1 ? 'bg-sky-300 dark:bg-sky-800' : 'bg-violet-300 dark:bg-violet-800',
+                  ].join(' ')}
                   key={date.toISOString()}
                 >
-                  {format(date, 'dd E')}
+                  <p className="px-12 py-2 text-lg sticky left-0">
+                    {format(date, 'dd eeee')}
+                  </p>
                 </div>
               ),
               width: 2,
@@ -65,7 +74,20 @@ function App(): React.ReactNode {
                 addHours(prevRange, 1).valueOf(),
               renderCell: (date: Date) => (
                 <div
-                  className='w-full flex'
+                  className={[
+                    'w-full',
+                    'flex',
+                    'items-center',
+                    'justify-center',
+                    'p-2',
+                    getDate(date) % 2 === 1
+                      ? getHours(date) % 2 === 1
+                        ? 'bg-sky-400 dark:bg-sky-950 bg-opacity-40'
+                        : 'bg-sky-400 dark:bg-sky-950 bg-opacity-60'
+                      : getHours(date) % 2 === 1
+                        ? 'bg-violet-400 dark:bg-violet-950 bg-opacity-40'
+                        : 'bg-violet-400 dark:bg-violet-950 bg-opacity-60',
+                  ].join(' ')}
                   key={date.toISOString()}
                 >
                   {format(date, 'hh:mm a')}
@@ -75,6 +97,17 @@ function App(): React.ReactNode {
               color: 'rgba(0, 0, 0, .25)',
             },
           ]}
+          slotsProps={{
+            splitterProps: {
+              className: 'bg-zinc-200 dark:bg-zinc-500',
+            },
+            headerProps: {
+              className: 'border-b-4 border-zinc-200 dark:border-zinc-500'
+            },
+            timerangeProps: {
+              className: 'py-2'
+            }
+          }}
           resources={resources}
           resourceColumnDefaultWidth={200}
           slots={{

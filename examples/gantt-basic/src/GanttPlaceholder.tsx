@@ -1,7 +1,8 @@
 import React from 'react'
 
-function Placeholder(_: any): React.ReactNode {
-  return <div className="h-8 bg-green-300 rounded-s" />
+function Placeholder(props: any): React.ReactNode {
+  const { event } = props ?? {}
+  return <div style={{ height: `${event?.height}px`}} className="bg-zinc-600 rounded-lg" />
 }
 
 export default React.memo(Placeholder) as typeof Placeholder

@@ -44,6 +44,7 @@ function Gantt<EventT, ResourceT>(
     resources,
     dateRange,
     slots,
+    slotsProps,
     dateViewLevels,
     updateEvent,
     handleEventDrop,
@@ -52,7 +53,17 @@ function Gantt<EventT, ResourceT>(
     getDragPreview,
     resourceWidth,
   } = props
-  const { Placeholder, Resource, Event } = slots ?? {}
+  const { Placeholder, Resource, ResourceHeader, Event } = slots ?? {}
+  const {
+    placeholderProps,
+    resourceProps,
+    resourceHeaderProps,
+    eventProps,
+    headerProps,
+    eventHeaderProps,
+    splitterProps,
+    timerangeProps,
+  } = slotsProps ?? {}
 
   if (!Resource || !Event) {
     throw new Error('Requires Resource and Event slots!')
@@ -215,7 +226,7 @@ function Gantt<EventT, ResourceT>(
     )
     if (!resourceRow)
       return
-    resourceRow.setAttribute('style', `height: ${entry.contentRect.height}px`)
+    resourceRow.setAttribute('style', `height: ${entry.borderBoxSize[0].blockSize}px`)
   }, [])
 
   useEffect(() => {
@@ -362,23 +373,28 @@ function Gantt<EventT, ResourceT>(
       }
     >
       <div
+        {...(headerProps ?? {})}
         style={{
+          ...(headerProps?.style ?? {}),
           display: 'grid',
           gridTemplateColumns:
             'var(--local-resizing-width, var(--local-initial-width)) 8px auto',
         }}
       >
-        <div></div>
+        {ResourceHeader ? <ResourceHeader /> : <div />}
         <div
+          {...(splitterProps ?? {})}
           ref={headerDividerRef}
           style={{
-            background: '#ebebeb',
             cursor: 'ew-resize',
+            ...(splitterProps?.style ?? {}),
             pointerEvents: isResizing ? 'none' : 'unset',
           }}
         />
         <div
+          {...(eventHeaderProps ?? {})}
           style={{
+            ...(eventHeaderProps?.style ?? {}),
             width: '100%',
             transform: 'translate3d(0, 0, 0)',
             overflowX: 'scroll',
@@ -390,6 +406,7 @@ function Gantt<EventT, ResourceT>(
         >
           <div
             style={{
+
               height: '100%',
               display: 'flex',
               flexFlow: 'column',
@@ -398,7 +415,7 @@ function Gantt<EventT, ResourceT>(
           >
             {dateViewLevelsRanges.map((level, i) => (
               <div
-                key={i}
+                key={`${i} - ${level.length}`}
                 style={{
                   display: 'grid',
                   height: '100%',
@@ -427,8 +444,6 @@ function Gantt<EventT, ResourceT>(
             display: 'flex',
             flexDirection: 'column',
             height: '100%',
-            overflowX: 'scroll',
-            overflowY: 'auto',
             scrollbarGutter: 'stable',
           }}
           ref={resourceScrollContainer}
@@ -440,10 +455,11 @@ function Gantt<EventT, ResourceT>(
           ))}
         </div>
         <div
+          {...splitterProps ?? {}}
           ref={dividerRef}
           style={{
-            background: '#ebebeb',
             cursor: 'ew-resize',
+            ...(splitterProps?.style ?? {}),
             pointerEvents: isResizing ? 'none' : 'unset',
           }}
         />
@@ -491,6 +507,7 @@ function Gantt<EventT, ResourceT>(
                   resizeRow={resizeRow}
                   schedulingThreeshold={schedulingThreeshold}
                   gridLayout={gridLayout}
+                  timerangeProps={timerangeProps}
                 >
                   {({ eventsByLevel }) => {
                     return eventsByLevel.map((level, i) =>

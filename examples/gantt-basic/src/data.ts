@@ -13,6 +13,7 @@ function createRandomResource(): GanttResource<unknown> {
     id: faker.string.uuid(),
     name: faker.person.fullName(),
     email: faker.internet.email(),
+    avatar: faker.image.avatar(),
   }
 }
 
@@ -36,6 +37,7 @@ function createRandomEvent(): GanttEvent<unknown> {
     endDate: startDate.valueOf() + duration * 60 * 1000,
     startDate: startDate.valueOf(),
     id: faker.string.numeric(6),
+    name: faker.hacker.phrase(),
   }
 }
 

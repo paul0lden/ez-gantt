@@ -65,6 +65,7 @@ function GanttElementWrapper<EventT>(
           const dragDiffX = input.clientX - eventElement.getBoundingClientRect().x
 
           out.push({
+            ...event,
             startDate: data.startDate,
             endDate: data.endDate,
             id,
