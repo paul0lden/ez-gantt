@@ -78,7 +78,7 @@ function App(): React.ReactNode {
                     'w-full',
                     'flex',
                     'items-center',
-                    'justify-center',
+                    'justify-start',
                     'p-2',
                     getDate(date) % 2 === 1
                       ? getHours(date) % 2 === 1
@@ -105,7 +105,10 @@ function App(): React.ReactNode {
               className: 'border-b-4 border-zinc-200 dark:border-zinc-500'
             },
             timerangeProps: {
-              className: 'py-2'
+              className: 'py-2 odd:bg-zinc-500 odd:bg-opacity-30'
+            },
+            resourceProps: {
+              className: 'odd:bg-zinc-500 odd:bg-opacity-30'
             }
           }}
           resources={resources}

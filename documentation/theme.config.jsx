@@ -16,4 +16,28 @@ export default {
       <meta property="og:description" content="Fast and easy to use react gantt chart" />
     </>
   ),
+
+  footer: {
+    text: (
+      <div className="w-full flex justify-between">
+        <div>
+          MIT
+          {' '}
+          {new Date().getFullYear()}
+        </div>
+        <div>
+          <a href="https://github.com/paul0lden">paul0lden</a>
+          <div>
+            {' '}
+            Docs build with
+            {' '}
+            <a href="https://nextra.site" target="_blank">
+              Nextra
+            </a>
+            .
+          </div>
+        </div>
+      </div>
+    ),
+  },
 }

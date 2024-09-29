@@ -449,7 +449,7 @@ function Gantt<EventT, ResourceT>(
           ref={resourceScrollContainer}
         >
           {resources.map(data => (
-            <div data-resource={data.id} key={data.id}>
+            <div {...resourceProps} data-resource={data.id} key={data.id}>
               <Resource {...data} />
             </div>
           ))}
