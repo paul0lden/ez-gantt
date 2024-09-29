@@ -4,7 +4,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { dropTargetForExternal } from '@atlaskit/pragmatic-drag-and-drop/external/adapter'
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useLayoutEffect, useRef } from 'react'
 
 import { getEventType } from './defaults'
 import { debounce, debounceRAF } from './utils/debounce'
@@ -24,31 +24,13 @@ function TimeRangeRow<EventT, ResourceT>(
     children,
     gridLayout,
     events,
+    eventHeight,
+    timerangeProps,
   } = props
 
   const eventsByLevel = getEventsByLevel(events ?? [])
-
   const rowRef = useRef<HTMLDivElement>(null)
 
-  const eventHeight = 45
-
-  useEffect(() => {
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        resizeRow(entry)
-      }
-    })
-    const row = rowRef.current
-    if (row) {
-      observer.observe(row)
-    }
-
-    return () => {
-      if (row) {
-        observer.unobserve(row)
-      }
-    }
-  }, [resizeRow])
   useEffect(() => {
     const element = rowRef.current
 
@@ -114,17 +96,48 @@ function TimeRangeRow<EventT, ResourceT>(
       }),
     )
   }, [msPerPixel, startDate, resource])
+  useLayoutEffect(() => {
+    // initial resize based on resources
+    const resourceElement = document.querySelector(`[data-resource="${resource.id}"]`)
+    const rowElement = rowRef.current
+
+    if (rowElement && resourceElement) {
+      const resourceHeight = resourceElement.getBoundingClientRect().height
+      const rowHeight = rowElement.getBoundingClientRect().height
+      if (resourceHeight > rowHeight) {
+        rowElement.style.minHeight = `${resourceHeight}px`
+      } else {
+        resourceElement.style.height = `${rowHeight}px`
+      }
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        resizeRow(entry)
+      }
+    })
+    const row = rowRef.current
+    if (row) {
+      observer.observe(row)
+    }
+
+    return () => {
+      if (row) {
+        observer.unobserve(row)
+      }
+    }
+  }, [resizeRow, resource])
 
   return (
     <div
+      {...(timerangeProps ?? {})}
       style={{
-        paddingBlock: '8px',
+        ...(timerangeProps?.style ?? {}),
         width: '100%',
-        overflow: 'hidden',
         rowGap: '8px',
-        boxSizing: 'content-box',
-        borderBottom: '2px solid rgba(0,0,0,.2)',
-        minHeight: `${40}px`,
+        boxSizing: 'border-box',
+        justifyContent: 'center',
+        alignItems: 'center',
         display: gridLayout ? 'grid' : 'flex',
         ...(gridLayout
           ? {

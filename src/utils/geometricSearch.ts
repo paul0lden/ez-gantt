@@ -26,12 +26,12 @@ export function rectanglesIntersect(rect1: Rect, rect2: Rect): boolean {
  * @param {HTMLElement} searchNode Rect to perform the search against
  */
 export function DOMGeometricSearch(
-  { querySelectorAll }: HTMLElement,
-  { getBoundingClientRect }: HTMLElement,
+  container: HTMLElement,
+  searchNode: HTMLElement,
 ): Array<Element> {
   const out: Array<Element> = []
-  const selectionRectBox = getBoundingClientRect()
-  querySelectorAll('[data-role="gantt-event"]').forEach((el) => {
+  const selectionRectBox = searchNode.getBoundingClientRect()
+  container.querySelectorAll('[data-role="gantt-event"]').forEach((el) => {
     const { x, y, width, height } = el.getBoundingClientRect()
     if (
       rectanglesIntersect(

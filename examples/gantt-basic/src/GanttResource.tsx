@@ -1,9 +1,10 @@
 import React from 'react'
 
-function Resource({ name }: any): React.ReactNode {
+function Resource({ name, avatar }: any): React.ReactNode {
   return (
-    <div className="w-full flex hover:bg-gray-400">
-      <div className="py-2 resource w-full items-start border-b-2 border-solid border-gray-500">
+    <div className="w-full h-full flex hover:bg-gray-400">
+      <div className="py-2 mx-4 resource w-full flex justify-start gap-2 items-center">
+        <img width={32} height={32} className='rounded-full' src={avatar} />
         <div className="w-max flex">
           {name}
         </div>

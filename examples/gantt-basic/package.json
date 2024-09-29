@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.0.3",
+    "@tailwindcss/container-queries": "^0.1.1",
     "date-fns": "^4.1.0",
     "ez-gantt": "file:../..",
     "react": "^18.3.1",
