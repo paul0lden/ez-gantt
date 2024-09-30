@@ -173,7 +173,7 @@ function GanttElementWrapper<EventT>(
       data-event-id={placeholder ? undefined : id}
       data-event-placeholder-id={placeholder ? id : undefined}
       ref={ref}
-      onPointerDown={selected ? () => { } : onClick}
+      onPointerDown={onClick}
       style={{
         zIndex: 10,
         cursor: 'pointer',
