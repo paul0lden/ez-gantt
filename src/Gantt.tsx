@@ -147,13 +147,15 @@ function Gantt<EventT, ResourceT>(
 
   const handleEventClick = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
+      e.preventDefault()
+      e.stopPropagation()
       const id = e.currentTarget.getAttribute('data-event-id')
       if (!id)
         return
       if (e.shiftKey) {
         updateEventSelection(prev =>
           prev.includes(id)
-            ? [...prev.splice(prev.indexOf(id), 1)]
+            ? [...prev.filter(el => el !== id)]
             : [...prev, id],
         )
       }

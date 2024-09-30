@@ -30,8 +30,8 @@ export function useSelectionUtils({
   const initialPosition = useRef({ x: 0, y: 0 })
   const initialMousePosition = useRef({ x: 0, y: 0 })
   const selectionData = useRef<{
-    startResource: string | null,
-    startTimestamp: number | null,
+    startResource: string | null
+    startTimestamp: number | null
   }>({
     startResource: null,
     startTimestamp: null,
