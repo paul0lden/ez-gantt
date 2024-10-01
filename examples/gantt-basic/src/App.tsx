@@ -38,8 +38,8 @@ function App(): React.ReactNode {
   }, [])
 
   return (
-    <div className="h-lvh w-full dark:bg-stone-900 flex justify-center items-center">
-      <div className="w-3/4 h-3/4 bg-zinc-100 dark:bg-zinc-700 dark:text-zinc-200 border-2 border-solid border-zinc-200 dark:border-zinc-400 rounded-2xl overflow-hidden">
+    <div className="h-lvh p-12 w-full dark:bg-stone-900 flex justify-center items-center">
+      <div className="w-full h-full bg-zinc-100 dark:bg-zinc-700 dark:text-zinc-200 border-2 border-solid border-zinc-200 dark:border-zinc-400 rounded-2xl overflow-hidden">
         <Gantt
           handleEventDrop={handleEventDrop}
           dateRange={dateRange}
@@ -66,7 +66,7 @@ function App(): React.ReactNode {
                   </p>
                 </div>
               ),
-              width: 2,
+              width: 4,
               color: 'rgba(0, 0, 0, .5)',
             },
             {
@@ -93,7 +93,7 @@ function App(): React.ReactNode {
                   {format(date, 'hh:mm a')}
                 </div>
               ),
-              width: 1,
+              width: 2,
               color: 'rgba(0, 0, 0, .25)',
             },
           ]}
@@ -102,14 +102,17 @@ function App(): React.ReactNode {
               className: 'bg-zinc-200 dark:bg-zinc-500',
             },
             headerProps: {
-              className: 'border-b-4 border-zinc-200 dark:border-zinc-500'
+              className: 'border-b-4 border-zinc-200 dark:border-zinc-500',
             },
             timerangeProps: {
-              className: 'py-2 odd:bg-zinc-500 odd:bg-opacity-30'
+              className: 'py-2 min-h-12 odd:bg-zinc-500 odd:bg-opacity-30',
             },
             resourceProps: {
-              className: 'odd:bg-zinc-500 odd:bg-opacity-30'
-            }
+              className: 'odd:bg-zinc-500 odd:bg-opacity-30',
+            },
+            eventProps: {
+              className: 'self-baseline',
+            },
           }}
           resources={resources}
           resourceColumnDefaultWidth={200}

@@ -5,17 +5,10 @@ function Event(props: any): React.ReactNode {
   const {
     startDate,
     endDate,
-    dateRange,
-    level,
-    eventHeight,
     tickWidthPixels,
-    schedulingThreeshold,
     id,
     event,
     selected,
-    resource,
-    updateEvent,
-    eventProps,
   } = props
 
   const width = (endDate - startDate) / tickWidthPixels
@@ -29,7 +22,7 @@ function Event(props: any): React.ReactNode {
     >
       {width > 120
         ? (
-            <div className="flex @md:flex-row max-h-72 flex-col gap-2 p-2 justify-between items-center">
+            <div className="flex @md:flex-row max-h-72 flex-col gap-2 p-1 justify-between items-center">
               <div className=" sticky left-0 @md:px-2 flex flex-col gap-1">
                 <div className="flex flex-col @md:flex-row gap-4">
                   <p className="break-words">
@@ -55,7 +48,6 @@ function Event(props: any): React.ReactNode {
                   e.preventDefault()
                   e.stopPropagation()
                 }}
-                type="button"
               >
                 {event.name}
               </p>

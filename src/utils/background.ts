@@ -1,41 +1,44 @@
 function drawLines(
-  level: { diff: number }[],
+  timeSegments: { diff: number }[],
   color: string,
-  width: number,
+  strokeWidth: number,
   msPerPixel: number,
-  limit: number,
+  timeRangeWidth: number,
 ): string[] {
-  let prevSize = 0
+  let currentPosition = 0
+  const lines = []
 
-  const outSizes = []
-
-  for (const { diff } of level) {
-    prevSize += diff / msPerPixel
-    if (prevSize !== limit) {
-      outSizes.push(prevSize)
+  for (const { diff } of timeSegments) {
+    currentPosition += diff / msPerPixel
+    if (currentPosition < timeRangeWidth) {
+      lines.push(
+        `<line x1='${currentPosition}' y1='0' x2='${currentPosition}' y2='100%' stroke='${color}' stroke-width='${strokeWidth}' />`,
+      )
+    }
+    else {
+      break
     }
   }
 
-  return outSizes.map(
-    size =>
-      `<line x1='${size}' y1='0' x2='${size}' y2='100%' stroke='${color}' stroke-width='${width}' />`,
-  )
+  return lines
 }
 
+type LevelSettings = { color: string, width: number }
+
 export function generateBackground(
-  levels: Array<Array<{ diff: number }>>,
-  limit: number,
+  timeLevels: Array<Array<{ diff: number }>>,
+  timeRangeWidth: number,
   msPerPixel: number,
-  settings: any,
+  levelSettings: Array<LevelSettings>,
 ): string {
-  return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${limit}' height='100%'>${levels
-    .flatMap((level, i) =>
+  return `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='${timeRangeWidth}' height='100%'>${timeLevels
+    .flatMap((timeLevel, i) =>
       drawLines(
-        level,
-        settings[i].color,
-        settings[i].width,
+        timeLevel,
+        levelSettings[i].color,
+        levelSettings[i].width,
         msPerPixel,
-        limit,
+        timeRangeWidth,
       ).join(''),
     )
     .join('')}</svg>")`

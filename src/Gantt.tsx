@@ -147,7 +147,6 @@ function Gantt<EventT, ResourceT>(
 
   const handleEventClick = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      e.preventDefault()
       e.stopPropagation()
       const id = e.currentTarget.getAttribute('data-event-id')
       if (!id)
